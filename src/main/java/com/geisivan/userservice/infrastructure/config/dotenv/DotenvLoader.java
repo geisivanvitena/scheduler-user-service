@@ -12,13 +12,22 @@ public class DotenvLoader {
             .load();
 
     public static void  load(){
+
+        // PostgreSQL
         set("DB_HOST");
         set("DB_PORT");
         set("POSTGRES_DB");
         set("POSTGRES_USER");
         set("POSTGRES_PASSWORD");
+
+        // JWT
         set("JWT_SECRET");
         set("JWT_EXPIRATION_MS");
+
+        // Default Admin
+        set("ADMIN_NAME");
+        set("ADMIN_EMAIL");
+        set("ADMIN_PASSWORD");
     }
 
     private static void set(String key) {
