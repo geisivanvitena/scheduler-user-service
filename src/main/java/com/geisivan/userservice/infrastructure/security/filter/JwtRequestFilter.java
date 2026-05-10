@@ -66,6 +66,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                     var userDetails =
                             service.loadUserById(userId);
 
+                    System.out.println("AUTHORITIES: " + userDetails.getAuthorities());
+
                     var auth =
                             new UsernamePasswordAuthenticationToken(
                                     userDetails,
