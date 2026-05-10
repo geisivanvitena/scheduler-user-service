@@ -72,6 +72,15 @@ public class UserService {
         }
     }
 
+    public UserResponseDTO getUserByEmail(String email){
+        User user = repository.findByEmailIgnoreCase(email)
+                .orElseThrow(
+                        () -> new ResourceNotFoundException(
+                                "User not found"));
+
+        return converter.toResponse(user);
+    }
+
     private User buildUser(UserRequestDTO dto){
         User user = converter.toEntity(dto);
         user.setPassword(encoder.encode(dto.password()));
