@@ -7,6 +7,7 @@ import com.geisivan.userservice.application.dto.response.LoginResponseDTO;
 import com.geisivan.userservice.application.dto.response.UserResponseDTO;
 import com.geisivan.userservice.application.service.UserService;
 import com.geisivan.userservice.infrastructure.exception.ConflictException;
+import com.geisivan.userservice.infrastructure.exception.ResourceNotFoundException;
 import com.geisivan.userservice.infrastructure.exception.UnauthorizedException;
 import com.geisivan.userservice.infrastructure.security.jwt.JwtUtil;
 import com.geisivan.userservice.infrastructure.security.service.UserDetailsServiceImpl;
@@ -20,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -152,5 +154,46 @@ class UserControllerTest {
                 .andExpect(status().isUnauthorized());
 
         verify(service).authenticate(any(LoginRequestDTO.class));
+    }
+
+    @Test
+    void getUserByEmail_shouldReturn200_whenUserExists() throws Exception {
+
+        UserResponseDTO response =
+                new UserResponseDTO(
+                        1L,
+                        "User test",
+                        EMAIL,
+                        List.of(),
+                        List.of()
+                );
+
+        when(service.getUserByEmail(EMAIL))
+                .thenReturn(response);
+
+        mockMvc.perform(get(BASE_URL)
+                        .param("email", EMAIL)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value(EMAIL))
+                .andExpect(jsonPath("$.name").value("User test"));
+
+        verify(service).getUserByEmail(EMAIL);
+    }
+
+    @Test
+    void getUserByEmail_shouldReturn404_whenUserNotFound() throws Exception {
+
+        when(service.getUserByEmail(EMAIL))
+                .thenThrow(
+                        new ResourceNotFoundException(
+                                "User not found"));
+
+        mockMvc.perform(get(BASE_URL)
+                        .param("email", EMAIL)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+
+        verify(service).getUserByEmail(EMAIL);
     }
 }

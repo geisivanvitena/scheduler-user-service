@@ -73,7 +73,7 @@ public class UserService {
     }
 
     public UserResponseDTO getUserByEmail(String email){
-        User user = repository.findByEmailIgnoreCase(email)
+        User user = repository.findByEmail(email)
                 .orElseThrow(
                         () -> new ResourceNotFoundException(
                                 "User not found"));

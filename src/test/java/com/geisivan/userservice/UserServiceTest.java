@@ -214,4 +214,41 @@ class UserServiceTest {
 
         verify(authenticationManager).authenticate(any());
     }
+
+    @Test
+    void getUserByEmail_shouldReturnUser_whenEmailExists() {
+
+        UserResponseDTO response =
+                new UserResponseDTO(
+                        1L,
+                        "User test",
+                        EMAIL,
+                        List.of(),
+                        List.of()
+                );
+
+        when(repository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
+        when(converter.toResponse(user)).thenReturn(response);
+
+        var result = service.getUserByEmail(EMAIL);
+
+        assertNotNull(result);
+        assertEquals(EMAIL, result.email());
+
+        verify(repository).findByEmail(EMAIL);
+        verify(converter).toResponse(user);
+    }
+
+    @Test
+    void getUserByEmail_shouldThrowResourceNotFound_whenUserDoesNotExist() {
+
+        when(repository.findByEmail(EMAIL))
+                .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> service.getUserByEmail(EMAIL));
+
+        verify(repository).findByEmail(EMAIL);
+        verifyNoInteractions(converter);
+    }
 }
