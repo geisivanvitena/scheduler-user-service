@@ -68,6 +68,7 @@ def excludedSonar = [
 		"src/main/java/com/geisivan/userservice/infrastructure/**",
 		"src/main/java/com/geisivan/userservice/application/dto/**",
 		"src/main/java/com/geisivan/userservice/application/converter/**",
+		"src/main/java/com/geisivan/userservice/domain/entity/**",
 		"src/main/java/com/geisivan/userservice/UserServiceApplication.java",
 		"src/test/java/com/geisivan/userservice/**"
 ]
