@@ -23,7 +23,6 @@ public class UserController {
     private final UserService service;
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserResponseDTO> create(
             @Valid @RequestBody UserRequestDTO dto) {
 

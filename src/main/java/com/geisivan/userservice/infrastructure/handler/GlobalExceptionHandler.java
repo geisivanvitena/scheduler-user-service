@@ -4,10 +4,10 @@ import com.geisivan.userservice.infrastructure.exception.ApiException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -28,6 +28,24 @@ public class GlobalExceptionHandler {
                         exception.getMessage(),
                         request.getRequestURI(),
                         ErrorCode.BUSINESS_ERROR,
+                        List.of()
+                ));
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponseDTO> handleAuthenticationException(
+            AuthenticationException exception,
+            HttpServletRequest request){
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponseDTO(
+                        LocalDateTime.now(),
+                        HttpStatus.UNAUTHORIZED.value(),
+                        HttpStatus.UNAUTHORIZED.getReasonPhrase(),
+                        exception.getMessage(),
+                        request.getRequestURI(),
+                        ErrorCode.UNAUTHORIZED,
                         List.of()
                 ));
     }

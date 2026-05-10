@@ -1,6 +1,8 @@
 package com.geisivan.userservice.infrastructure.security.config;
 
 import com.geisivan.userservice.infrastructure.security.filter.JwtRequestFilter;
+import com.geisivan.userservice.infrastructure.security.handler.CustomAccessDeniedHandler;
+import com.geisivan.userservice.infrastructure.security.handler.CustomAuthenticationEntryPoint;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
@@ -32,9 +34,17 @@ public class SecurityConfig {
     public static final String SECURITY_SCHEME = "bearerAuth";
 
     private final JwtRequestFilter filter;
+    private final CustomAuthenticationEntryPoint entryPoint;
+    private final CustomAccessDeniedHandler accessDeniedHandler;
 
-    public SecurityConfig(JwtRequestFilter filter) {
+    public SecurityConfig(
+            JwtRequestFilter filter,
+            CustomAuthenticationEntryPoint entryPoint,
+            CustomAccessDeniedHandler accessDeniedHandler
+    ) {
         this.filter = filter;
+        this.entryPoint = entryPoint;
+        this.accessDeniedHandler = accessDeniedHandler;
     }
 
     @Bean
@@ -46,6 +56,10 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(entryPoint)
+                        .accessDeniedHandler(accessDeniedHandler))
+
                 .authorizeHttpRequests(auth -> auth
 
                         .requestMatchers(
@@ -56,6 +70,7 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/users/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/users/address/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/users").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(filter,
