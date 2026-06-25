@@ -1,0 +1,81 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.5.15'
+	id 'io.spring.dependency-management' version '1.1.7'
+	id 'jacoco'
+	id "org.sonarqube" version "4.4.1.3373"
+}
+
+group = 'com.geisivan'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'io.github.cdimascio:java-dotenv:5.2.2'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	compileOnly 'org.projectlombok:lombok'
+	runtimeOnly 'org.postgresql:postgresql'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testCompileOnly 'org.projectlombok:lombok'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testAnnotationProcessor 'org.projectlombok:lombok'
+}
+
+test {
+	useJUnitPlatform()
+	finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+	dependsOn test
+	reports {
+		xml.required = true
+		html.required = true
+	}
+}
+
+jacocoTestCoverageVerification{
+	violationRules {
+		rule {
+			limit {
+				minimum = 0.8
+			}
+		}
+	}
+}
+
+def excludedSonar = [
+		"src/main/java/com/geisivan/userservice/infrastructure/**",
+		"src/main/java/com/geisivan/userservice/application/dto/**",
+		"src/main/java/com/geisivan/userservice/application/converter/**",
+		"src/main/java/com/geisivan/userservice/domain/entity/**",
+		"src/main/java/com/geisivan/userservice/UserServiceApplication.java",
+		"src/test/java/com/geisivan/userservice/**"
+]
+
+sonarqube {
+	properties {
+		property "sonar.projectKey", "user-service"
+		property "sonar.host.url", "http://localhost:9000"
+		property "sonar.token", System.getenv("SONAR_TOKEN")
+		property "sonar.exclusions", excludedSonar.join(",")
+		property "sonar.tests", "src/test/java"
+		property "sonar.java.binaries", "build/classes/java/main"
+	}
+}
+
+tasks.named("sonarqube") {
+	dependsOn tasks.jacocoTestReport
+}
