@@ -35,3 +35,24 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Environment Variables ###
+.env
+.env.*
+
+### Logs ###
+*.log
+logs/
+
+### JaCoCo ###
+jacoco.exec
+
+### SonarQube ###
+.sonar/
+
+### Coverage Reports ###
+coverage/
+
+### OS Files ###
+.DS_Store
+Thumbs.db
