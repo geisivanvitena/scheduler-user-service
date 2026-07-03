@@ -8,7 +8,8 @@ public class DotenvInitializer
         implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
     @Override
-    public void initialize(@NotNull ConfigurableApplicationContext context) {
+    public void initialize(
+            @NotNull ConfigurableApplicationContext context) {
         DotenvLoader.load();
     }
 }
