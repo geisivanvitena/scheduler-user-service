@@ -51,7 +51,7 @@ public class UserDetailsServiceImpl  implements UserDetailsService {
         return new MainUser(
                 user.getId(),
                 user.getEmail(),
-                user.getPasswordHash(),
+                user.getPassword(),
                 roles,
                 user.getStatus()
         );
