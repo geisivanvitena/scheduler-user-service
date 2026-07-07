@@ -41,6 +41,11 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build
+      - name: Build, Test, Coverage and SonarCloud
         run: |
-          ./gradlew clean build
+          ./gradlew clean test jacocoTestReport sonar \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.organization=geisivanvitena \
+            -Dsonar.projectKey=geisivanvitena_scheduler-user-service \
+            -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml
