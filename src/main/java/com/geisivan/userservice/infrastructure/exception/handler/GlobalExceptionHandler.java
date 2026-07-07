@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
 
@@ -19,8 +18,6 @@ import java.util.List;
 @RestControllerAdvice
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
-
-    private final Clock clock;
 
     // Handler business exceptions
     @ExceptionHandler(ApiException.class)
@@ -37,7 +34,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(exception.getHttpStatus())
                 .body(new ErrorResponseDTO(
-                        Instant.now(clock),
+                        Instant.now(),
                         exception.getHttpStatus().value(),
                         exception.getHttpStatus().getReasonPhrase(),
                         exception.getMessage(),
@@ -60,7 +57,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(new ErrorResponseDTO(
-                        Instant.now(clock),
+                        Instant.now(),
                         HttpStatus.UNAUTHORIZED.value(),
                         HttpStatus.UNAUTHORIZED.getReasonPhrase(),
                         exception.getMessage(),
@@ -85,7 +82,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ErrorResponseDTO(
-                        Instant.now(clock),
+                        Instant.now(),
                         HttpStatus.INTERNAL_SERVER_ERROR.value(),
                         HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
                         "Internal server error. Please contact support.",
