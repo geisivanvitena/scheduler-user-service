@@ -10,7 +10,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 import java.io.IOException;
-import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
 
@@ -19,13 +18,9 @@ import java.util.List;
 public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
     private final ObjectMapper objectMapper;
-    private final Clock clock;
 
-    public CustomAccessDeniedHandler(ObjectMapper objectMapper,
-                                     Clock clock) {
-
+    public CustomAccessDeniedHandler(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
-        this.clock = clock;
     }
 
     @Override
@@ -40,7 +35,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
                 accessDeniedException.getMessage());
 
         ErrorResponseDTO errorResponse = new ErrorResponseDTO(
-                Instant.now(clock),
+                Instant.now(),
                 HttpServletResponse.SC_FORBIDDEN,
                 "Forbidden",
                 "Access denied. You do not have permission to access this resource.",

@@ -11,7 +11,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 import java.io.IOException;
-import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
 
@@ -25,13 +24,9 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
             "Authentication is required to access this resource.";
 
     private final ObjectMapper objectMapper;
-    private final Clock clock;
 
-    public CustomAuthenticationEntryPoint(ObjectMapper objectMapper,
-                                          Clock clock) {
-
+    public CustomAuthenticationEntryPoint(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
-        this.clock = clock;
     }
 
     @Override
@@ -68,7 +63,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         }
 
         ErrorResponseDTO errorResponse = new ErrorResponseDTO(
-                Instant.now(clock),
+                Instant.now(),
                 status,
                 error,
                 message,
