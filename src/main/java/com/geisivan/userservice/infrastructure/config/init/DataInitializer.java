@@ -80,7 +80,7 @@ public class DataInitializer {
         User admin = User.builder()
                 .name(adminName)
                 .email(adminEmail)
-                .passwordHash(passwordEncoder.encode(adminPassword))
+                .password(passwordEncoder.encode(adminPassword))
                 .status(UserStatus.ACTIVE)
                 .roles(Set.of(adminRole))
                 .build();

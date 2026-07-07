@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 public record MainUser(
         Long id,
         String email,
-        String passwordHash,
+        String password,
         Set<RoleName> roles,
         UserStatus status
 
@@ -32,7 +32,7 @@ public record MainUser(
 
     @Override
     public String getPassword() {
-        return passwordHash;
+        return password;
     }
 
     @Override

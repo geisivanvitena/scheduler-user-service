@@ -28,7 +28,7 @@ public class User extends Auditable {
     private String email;
 
     @Column(name = "password_hash", nullable = false)
-    private String passwordHash;
+    private String password;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
