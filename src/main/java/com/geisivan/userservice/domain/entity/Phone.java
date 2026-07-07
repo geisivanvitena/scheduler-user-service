@@ -18,11 +18,11 @@ public class Phone {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "area_code", length = 3, nullable = false)
+    @Column(name = "area_code", length = 2, nullable = false)
     private String areaCode;
 
-    @Column(name = "number", length = 15, nullable = false)
-    private String number;
+    @Column(name = "phone_number", length = 9, nullable = false)
+    private String phoneNumber;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "phone_type", nullable = false)
