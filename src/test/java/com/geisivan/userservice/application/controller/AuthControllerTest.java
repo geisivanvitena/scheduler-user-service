@@ -1,10 +1,13 @@
 package com.geisivan.userservice.application.controller;
 
+import com.geisivan.userservice.application.dto.request.LoginRequestDTO;
 import com.geisivan.userservice.application.dto.request.UserRequestDTO;
+import com.geisivan.userservice.application.dto.response.LoginResponseDTO;
 import com.geisivan.userservice.application.dto.response.UserResponseDTO;
 import com.geisivan.userservice.application.service.AuthService;
 import com.geisivan.userservice.domain.enums.UserStatus;
 import com.geisivan.userservice.infrastructure.exception.custom.ConflictException;
+import com.geisivan.userservice.infrastructure.exception.custom.UserUnauthorizedException;
 import com.geisivan.userservice.infrastructure.security.jwt.JwtUtil;
 import com.geisivan.userservice.infrastructure.security.service.UserDetailsServiceImpl;
 import org.junit.jupiter.api.Test;
@@ -39,7 +42,7 @@ class AuthControllerTest {
     @MockitoBean
     private AuthService authService;
 
-    private static final String REGISTER_URL = "/api/v1/auth/register";
+    private static final String BASE_URL = "/api/v1/auth";
     private static final String EMAIL = "admin@domain.com";
 
     private static final String VALID_REQUEST = """
@@ -71,7 +74,7 @@ class AuthControllerTest {
         when(authService.register(any(UserRequestDTO.class)))
                 .thenReturn(response);
 
-        mockMvc.perform(post(REGISTER_URL)
+        mockMvc.perform(post(BASE_URL + "/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(VALID_REQUEST))
                 .andExpect(status().isCreated())
@@ -89,7 +92,7 @@ class AuthControllerTest {
         when(authService.register(any(UserRequestDTO.class)))
                 .thenThrow(new ConflictException("Email already exists"));
 
-        mockMvc.perform(post(REGISTER_URL)
+        mockMvc.perform(post(BASE_URL + "/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(VALID_REQUEST))
                 .andExpect(status().isConflict())
@@ -98,6 +101,60 @@ class AuthControllerTest {
 
         verify(authService, times(1))
                 .register(any(UserRequestDTO.class));
+    }
+
+    @Test
+    void login_shouldReturn200_whenValidCredentials() throws Exception {
+
+        LoginResponseDTO response =
+                new LoginResponseDTO(
+                        "Bearer token",
+                        "Bearer",
+                        1L,
+                        EMAIL
+                );
+
+        when(authService.login(any(LoginRequestDTO.class)))
+                .thenReturn(response);
+
+        mockMvc.perform(post(BASE_URL + "/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                   "email":"admin@domain.com",
+                                   "password":"123456"
+                                }
+                                """))
+
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token")
+                        .value("Bearer token"))
+                .andExpect(jsonPath("$.userId")
+                        .value(1))
+                .andExpect(jsonPath("$.email")
+                        .value(EMAIL));
+
+        verify(authService).login(any(LoginRequestDTO.class));
+    }
+
+    @Test
+    void login_shouldReturn401_whenInvalidCredentials() throws Exception {
+
+        when(authService.login(any(LoginRequestDTO.class )))
+                .thenThrow(new UserUnauthorizedException(
+                        "Invalid credentials"));
+
+        mockMvc.perform(post(BASE_URL + "/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                        {
+                           "email":"admin@domain.com",
+                           "password":"wrong."
+                        }
+                        """))
+                .andExpect(status().isUnauthorized());
+
+        verify(authService).login(any(LoginRequestDTO.class));
     }
 }
 
