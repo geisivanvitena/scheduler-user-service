@@ -1,5 +1,6 @@
 package com.geisivan.userservice.application.service;
 
+import com.geisivan.userservice.application.dto.request.LoginRequestDTO;
 import com.geisivan.userservice.application.dto.request.UserRequestDTO;
 import com.geisivan.userservice.application.dto.response.UserResponseDTO;
 import com.geisivan.userservice.application.mapper.UserMapper;
@@ -10,14 +11,21 @@ import com.geisivan.userservice.domain.enums.RoleName;
 import com.geisivan.userservice.domain.enums.UserStatus;
 import com.geisivan.userservice.infrastructure.exception.custom.ConflictException;
 import com.geisivan.userservice.infrastructure.exception.custom.ResourceNotFoundException;
+import com.geisivan.userservice.infrastructure.exception.custom.UserUnauthorizedException;
 import com.geisivan.userservice.infrastructure.repository.RoleRepository;
 import com.geisivan.userservice.infrastructure.repository.UserRepository;
+import com.geisivan.userservice.infrastructure.security.auth.MainUser;
+import com.geisivan.userservice.infrastructure.security.jwt.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.Instant;
 import java.util.*;
@@ -35,6 +43,11 @@ class AuthServiceTest {
 
     @Mock
     private UserMapper userMapper;
+
+    @Mock
+    private AuthenticationManager authenticationManager;
+    @Mock
+    private JwtUtil jwtUtil;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -163,5 +176,62 @@ class AuthServiceTest {
         verify(passwordEncoder).encode(PASSWORD);
         verify(roleRepository).findByName(RoleName.ROLE_USER);
         verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void login_shouldReturnToken_whenCredentialsAreValid() {
+
+        LoginRequestDTO dto =
+                new LoginRequestDTO(
+                        EMAIL,
+                        "123456"
+                );
+
+        var mainUser = mock(MainUser.class);
+
+        when(mainUser.id()).thenReturn(1L);
+        when(mainUser.email()).thenReturn(EMAIL);
+
+        var authentication = mock(Authentication.class);
+
+        when(authenticationManager.authenticate(
+                any(UsernamePasswordAuthenticationToken.class)))
+                .thenReturn(authentication);
+        when(authentication.getPrincipal())
+                .thenReturn(mainUser);
+        when(jwtUtil.generateToken(1L, EMAIL))
+                .thenReturn("token");
+
+        var response  = authServiceImpl.login(dto);
+
+        assertNotNull(response);
+        assertEquals("token", response.token());
+        assertEquals(EMAIL, response.email());
+        assertEquals(1L, response.userId());
+
+        verify(authenticationManager)
+                .authenticate(
+                        any(UsernamePasswordAuthenticationToken.class));
+
+        verify(jwtUtil).generateToken(1L, EMAIL);
+    }
+
+    @Test
+    void login_shouldThrowException_whenCredentialsAreInvalid() {
+
+        LoginRequestDTO dto =
+                new LoginRequestDTO(
+                        EMAIL,
+                        "wrong"
+                );
+
+        when(authenticationManager.authenticate(any()))
+                .thenThrow(new BadCredentialsException("Invalid"));
+
+        assertThrows(UserUnauthorizedException.class,
+                () -> authServiceImpl.login(dto));
+
+        verify(authenticationManager).authenticate(any());
+
     }
 }
