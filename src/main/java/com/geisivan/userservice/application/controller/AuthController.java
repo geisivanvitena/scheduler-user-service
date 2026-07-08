@@ -1,6 +1,8 @@
 package com.geisivan.userservice.application.controller;
 
+import com.geisivan.userservice.application.dto.request.LoginRequestDTO;
 import com.geisivan.userservice.application.dto.request.UserRequestDTO;
+import com.geisivan.userservice.application.dto.response.LoginResponseDTO;
 import com.geisivan.userservice.application.dto.response.UserResponseDTO;
 import com.geisivan.userservice.application.service.AuthService;
 import jakarta.validation.Valid;
@@ -28,5 +30,14 @@ public class AuthController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponseDTO> login(
+            @Valid @RequestBody LoginRequestDTO dto) {
+
+        LoginResponseDTO response = authService.login(dto);
+
+        return ResponseEntity.ok(response);
     }
 }

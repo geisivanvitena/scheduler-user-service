@@ -64,9 +64,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         var claims = claimsOpt.get();
         var userIdOpt = jwtUtil.extractUserId(claims);
 
-        var context = SecurityContextHolder.getContext();
+        var securityContext = SecurityContextHolder.getContext();
 
-        if (userIdOpt.isPresent() && context.getAuthentication() == null) {
+        if (userIdOpt.isPresent() && securityContext.getAuthentication() == null) {
             var userId = userIdOpt.get();
             var userDetails = userDetailsService.loadUserById(userId);
 
@@ -78,12 +78,12 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
                 throw new UserInactiveException("User account is inactive");
             }
-            var auth = new UsernamePasswordAuthenticationToken(
+            var authentication = new UsernamePasswordAuthenticationToken(
                     userDetails,
                     null,
                     userDetails.getAuthorities());
 
-            context.setAuthentication(auth);
+            securityContext.setAuthentication(authentication);
 
             log.debug("User authenticated via JWT | userId: {} | method: {} | path: {}",
                     userId,
