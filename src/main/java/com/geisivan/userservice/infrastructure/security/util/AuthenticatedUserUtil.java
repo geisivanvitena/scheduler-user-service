@@ -4,9 +4,9 @@ import com.geisivan.userservice.infrastructure.exception.custom.UserUnauthorized
 import com.geisivan.userservice.infrastructure.security.auth.MainUser;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-public class SecurityUtils {
+public class AuthenticatedUserUtil {
 
-    private SecurityUtils() {}
+    private AuthenticatedUserUtil() {}
 
     public static MainUser getUser() {
         var authentication = SecurityContextHolder
@@ -25,11 +25,11 @@ public class SecurityUtils {
         return user;
     }
 
-    public static Long getUserId() {
+    public static Long getId() {
         return getUser().id();
     }
 
-    public static String getUserEmail() {
+    public static String getEmail() {
         return getUser().email();
     }
 }
