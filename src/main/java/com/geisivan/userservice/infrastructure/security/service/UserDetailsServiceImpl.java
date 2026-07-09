@@ -23,7 +23,7 @@ public class UserDetailsServiceImpl  implements UserDetailsService {
 
     @Override
     public MainUser loadUserByUsername(String email) {
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByEmailWithRoles(email)
                 .orElseThrow(() ->
                         new UsernameNotFoundException(
                                 USER_NOT_FOUND));
@@ -32,7 +32,7 @@ public class UserDetailsServiceImpl  implements UserDetailsService {
     }
 
     public MainUser loadUserById(Long id) {
-        User user = userRepository.findById(id)
+        User user = userRepository.findByIdWithRoles(id)
                 .orElseThrow(() ->
                         new UsernameNotFoundException(
                                 USER_NOT_FOUND));
@@ -41,9 +41,7 @@ public class UserDetailsServiceImpl  implements UserDetailsService {
     }
 
     private MainUser map(User user) {
-        var roles = (user.getRoles() == null)
-                ? new HashSet<RoleName>()
-                : user.getRoles()
+        var roles = user.getRoles()
                 .stream()
                 .map(Role::getName)
                 .collect(Collectors.toSet());
