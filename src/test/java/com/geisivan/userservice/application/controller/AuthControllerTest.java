@@ -56,7 +56,7 @@ class AuthControllerTest {
         """;
 
     @Test
-    void register_shouldReturn201() throws Exception {
+    void register_shouldReturn201_whenRequestIsValid() throws Exception {
 
         UserResponseDTO response =
                 new UserResponseDTO(
@@ -104,7 +104,7 @@ class AuthControllerTest {
     }
 
     @Test
-    void login_shouldReturn200_whenValidCredentials() throws Exception {
+    void login_shouldReturn200_whenCredentialsAreValid() throws Exception {
 
         LoginResponseDTO response =
                 new LoginResponseDTO(
@@ -138,7 +138,7 @@ class AuthControllerTest {
     }
 
     @Test
-    void login_shouldReturn401_whenInvalidCredentials() throws Exception {
+    void login_shouldReturn401_whenCredentialsAreInvalid() throws Exception {
 
         when(authService.login(any(LoginRequestDTO.class )))
                 .thenThrow(new UserUnauthorizedException(

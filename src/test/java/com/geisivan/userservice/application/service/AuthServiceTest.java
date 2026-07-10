@@ -46,6 +46,7 @@ class AuthServiceTest {
 
     @Mock
     private AuthenticationManager authenticationManager;
+
     @Mock
     private JwtUtil jwtUtil;
 
@@ -57,6 +58,7 @@ class AuthServiceTest {
 
     private User user;
     private Role role;
+
     private static final String EMAIL = "teste@gmail.com";
     private static final String PASSWORD = "123456";
 
@@ -78,7 +80,7 @@ class AuthServiceTest {
     }
 
     @Test
-    void create_shouldReturnUser() {
+    void register_shouldReturnUser_whenRequestIsValid() {
         UserRequestDTO dto =
                 new UserRequestDTO(
                         "User test",
@@ -128,7 +130,7 @@ class AuthServiceTest {
     }
 
     @Test
-    void register_shouldThrowConflict_whenEmailExists() {
+    void register_shouldThrowConflictException_whenEmailExists() {
         UserRequestDTO dto =
                 new UserRequestDTO(
                         "User test",
@@ -149,7 +151,7 @@ class AuthServiceTest {
     }
 
     @Test
-    void register_shouldThrowResourceNotFound_whenDefaultRoleDoesNotExist() {
+    void register_shouldThrowResourceNotFoundException_whenDefaultRoleDoesNotExist() {
         UserRequestDTO dto =
                 new UserRequestDTO(
                         "User Test",
@@ -217,7 +219,7 @@ class AuthServiceTest {
     }
 
     @Test
-    void login_shouldThrowException_whenCredentialsAreInvalid() {
+    void login_shouldThrowUserUnauthorizedException_whenCredentialsAreInvalid() {
 
         LoginRequestDTO dto =
                 new LoginRequestDTO(
@@ -232,6 +234,5 @@ class AuthServiceTest {
                 () -> authServiceImpl.login(dto));
 
         verify(authenticationManager).authenticate(any());
-
     }
 }
