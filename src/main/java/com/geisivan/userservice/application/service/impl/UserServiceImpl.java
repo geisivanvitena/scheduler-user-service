@@ -25,6 +25,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "User not found"));
 
+
         return userMapper.toDTO(user);
     }
 }
