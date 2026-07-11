@@ -105,14 +105,19 @@ class AuthServiceTest {
 
         when(userRepository.existsByEmail(EMAIL))
                 .thenReturn(false);
+
         when(passwordEncoder.encode("123456"))
                 .thenReturn("encoded");
+
         when(userMapper.toEntity(dto))
                 .thenReturn(user);
+
         when(roleRepository.findByName(RoleName.ROLE_USER))
                 .thenReturn(Optional.of(role));
+
         when(userRepository.save(user))
                 .thenReturn(user);
+
         when(userMapper.toDTO(user))
                 .thenReturn(response);
 
@@ -163,10 +168,13 @@ class AuthServiceTest {
 
         when(userRepository.existsByEmail(EMAIL))
                 .thenReturn(false);
+
         when(userMapper.toEntity(dto))
                 .thenReturn(user);
+
         when(passwordEncoder.encode(PASSWORD))
                 .thenReturn("encodedPassword");
+
         when(roleRepository.findByName(RoleName.ROLE_USER))
                 .thenReturn(Optional.empty());
 
@@ -199,8 +207,10 @@ class AuthServiceTest {
         when(authenticationManager.authenticate(
                 any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(authentication);
+
         when(authentication.getPrincipal())
                 .thenReturn(mainUser);
+
         when(jwtUtil.generateToken(1L, EMAIL))
                 .thenReturn("token");
 
@@ -212,8 +222,8 @@ class AuthServiceTest {
         assertEquals(1L, response.userId());
 
         verify(authenticationManager)
-                .authenticate(
-                        any(UsernamePasswordAuthenticationToken.class));
+                .authenticate(any(
+                        UsernamePasswordAuthenticationToken.class));
 
         verify(jwtUtil).generateToken(1L, EMAIL);
     }
