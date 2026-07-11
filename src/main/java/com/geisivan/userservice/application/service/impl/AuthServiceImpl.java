@@ -38,6 +38,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public UserResponseDTO register(UserRequestDTO dto) {
+
         validateEmailExists(dto.email());
 
         User user = buildUser(dto);
@@ -67,17 +68,19 @@ public class AuthServiceImpl implements AuthService {
                     "Bearer",
                     mainUser.id(),
                     mainUser.email()
-
             );
 
         }catch (AuthenticationException e) {
+
             throw new UserUnauthorizedException(
                     "Invalid email or password");
         }
     }
 
     private User buildUser(UserRequestDTO dto) {
+
         User user = userMapper.toEntity(dto);
+
         user.setPassword(passwordEncoder.encode(dto.password()));
 
         Role role = getDefaultRole();
@@ -87,16 +90,16 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private Role getDefaultRole() {
+
         return roleRepository.findByName(RoleName.ROLE_USER)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Default role not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Default role not found"));
     }
 
     private void validateEmailExists(String email) {
+
         if (userRepository.existsByEmail(email)) {
-            throw new ConflictException(
-                    "Email already exists: " + email);
+            throw new ConflictException("Email already exists: " + email);
         }
     }
 }
