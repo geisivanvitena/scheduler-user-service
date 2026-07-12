@@ -28,4 +28,12 @@ public class UserController {
         return ResponseEntity.ok(
                 userService.updateAuthenticatedUser(dto));
     }
+
+    @DeleteMapping
+    public ResponseEntity<Void> deleteAuthenticatedUser(){
+
+        userService.deleteAuthenticatedUser();
+
+        return ResponseEntity.noContent().build();
+    }
 }
