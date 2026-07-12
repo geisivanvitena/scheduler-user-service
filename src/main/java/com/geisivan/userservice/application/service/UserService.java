@@ -8,4 +8,6 @@ public interface UserService {
     UserResponseDTO findAuthenticatedUser();
 
     UserResponseDTO updateAuthenticatedUser(UserUpdateRequestDTO dto);
+
+    void deleteAuthenticatedUser();
 }

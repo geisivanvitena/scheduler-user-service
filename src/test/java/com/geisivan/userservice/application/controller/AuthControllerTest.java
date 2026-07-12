@@ -108,7 +108,7 @@ class AuthControllerTest {
 
         LoginResponseDTO response =
                 new LoginResponseDTO(
-                        "Bearer token",
+                        "token",
                         "Bearer",
                         1L,
                         EMAIL
@@ -128,7 +128,7 @@ class AuthControllerTest {
 
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token")
-                        .value("Bearer token"))
+                        .value("token"))
                 .andExpect(jsonPath("$.userId")
                         .value(1))
                 .andExpect(jsonPath("$.email")
