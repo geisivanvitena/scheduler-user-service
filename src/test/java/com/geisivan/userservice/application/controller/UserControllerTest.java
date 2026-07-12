@@ -10,7 +10,6 @@ import com.geisivan.userservice.infrastructure.security.service.UserDetailsServi
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -19,9 +18,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = UserController.class)
@@ -163,8 +161,35 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.message")
                         .value("User not found"));
 
-        verify(userService)
-                .updateAuthenticatedUser(
-                        any(UserUpdateRequestDTO.class));
+        verify(userService).updateAuthenticatedUser(
+                any(UserUpdateRequestDTO.class));
+    }
+
+    @Test
+    void deleteAuthenticatedUser_shouldReturn204_whenUserIsDeleted()
+            throws Exception {
+
+        mockMvc.perform(delete(BASE_URL))
+                .andExpect(status().isNoContent());
+
+        verify(userService).deleteAuthenticatedUser();
+    }
+
+    @Test
+    void deleteAuthenticatedUser_shouldReturn404_whenUserDoesNotExist()
+            throws Exception {
+
+        doThrow(new ResourceNotFoundException(
+                "User not found"))
+
+                .when(userService).deleteAuthenticatedUser();
+
+        mockMvc.perform(delete(BASE_URL))
+                .andExpect(status().isNotFound())
+
+                .andExpect(jsonPath("$.message")
+                        .value("User not found"));
+
+        verify(userService).deleteAuthenticatedUser();
     }
 }

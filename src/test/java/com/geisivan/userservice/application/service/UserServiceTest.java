@@ -18,7 +18,6 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -362,6 +361,45 @@ class UserServiceTest {
 
             verify(userRepository).findById(id);
             verifyNoInteractions(userMapper);
+        }
+    }
+
+    @Test
+    void deleteAuthenticatedUser_shouldDeleteUser_whenUserExists() {
+
+        Long id = 1L;
+
+        try (MockedStatic<AuthenticatedUserUtil> mocked =
+                     Mockito.mockStatic(AuthenticatedUserUtil.class)) {
+
+            mocked.when(AuthenticatedUserUtil::getId).thenReturn(id);
+
+            when(userRepository.findById(id)).thenReturn(Optional.of(user));
+
+            userServiceImpl.deleteAuthenticatedUser();
+
+            verify(userRepository).findById(id);
+            verify(userRepository).delete(user);
+        }
+    }
+
+    @Test
+    void deleteAuthenticatedUser_shouldThrowResourceNotFoundException_whenUserDoesNotExist() {
+
+        Long id = 1L;
+
+        try (MockedStatic<AuthenticatedUserUtil> mocked =
+                     Mockito.mockStatic(AuthenticatedUserUtil.class)) {
+
+            mocked.when(AuthenticatedUserUtil::getId).thenReturn(id);
+
+            when(userRepository.findById(id)).thenReturn(Optional.empty());
+
+            assertThrows(ResourceNotFoundException.class,
+                    () -> userServiceImpl.deleteAuthenticatedUser());
+
+            verify(userRepository).findById(id);
+            verify(userRepository, never()).delete(any());
         }
     }
 }
