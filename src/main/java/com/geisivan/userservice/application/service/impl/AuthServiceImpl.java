@@ -59,7 +59,7 @@ public class AuthServiceImpl implements AuthService {
 
             var mainUser = (MainUser) authentication.getPrincipal();
 
-            String token = "Bearer " + jwtUtil.generateToken(
+            String token = jwtUtil.generateToken(
                     mainUser.id(),
                     mainUser.email());
 

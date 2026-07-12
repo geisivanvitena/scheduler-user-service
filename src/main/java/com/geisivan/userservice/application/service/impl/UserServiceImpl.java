@@ -24,11 +24,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponseDTO findAuthenticatedUser() {
 
-        Long userId = AuthenticatedUserUtil.getId();
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "User not found"));
+        User user = getAuthenticatedUser();
 
         return userMapper.toDTO(user);
     }
@@ -37,11 +33,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponseDTO updateAuthenticatedUser(UserUpdateRequestDTO dto) {
 
-        Long userId = AuthenticatedUserUtil.getId();
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "User not found"));
+        User user = getAuthenticatedUser();
 
         userMapper.update(dto, user);
 
@@ -49,8 +41,32 @@ public class UserServiceImpl implements UserService {
             user.setPassword(passwordEncoder.encode(dto.password()));
         }
 
+        // Ensures @LastModifiedDate is updated before mapping the response
         userRepository.flush();
 
         return userMapper.toDTO(user);
+    }
+
+    @Transactional
+    @Override
+    public void deleteAuthenticatedUser() {
+
+        User user = getAuthenticatedUser();
+
+        userRepository.delete(user);
+    }
+
+    private User findUserById(Long userId) {
+
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User not found"));
+    }
+
+    private User getAuthenticatedUser() {
+
+        Long userId = AuthenticatedUserUtil.getId();
+
+        return findUserById(userId);
     }
 }

@@ -217,7 +217,7 @@ class AuthServiceTest {
         var response  = authServiceImpl.login(dto);
 
         assertNotNull(response);
-        assertEquals("Bearer token", response.token());
+        assertEquals("token", response.token());
         assertEquals(EMAIL, response.email());
         assertEquals(1L, response.userId());
 
