@@ -99,7 +99,7 @@ class AddressServiceTest {
                 .thenReturn(response);
 
         var result =
-                addressServiceImpl.createAddress(request);
+                addressServiceImpl.createAuthenticatedUserAddress(request);
 
         assertNotNull(result);
         assertEquals("Main Street", result.street());

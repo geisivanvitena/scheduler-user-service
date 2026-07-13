@@ -11,6 +11,7 @@ import com.geisivan.userservice.infrastructure.repository.AddressRepository;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +23,7 @@ public class AddressServiceImpl implements AddressService {
 
     @Transactional
     @Override
-    public AddressResponseDTO createAddress(AddressRequestDTO dto) {
+    public AddressResponseDTO createAuthenticatedUserAddress(AddressRequestDTO dto) {
 
         User user = currentUserService.getAuthenticatedUser();
 
@@ -30,6 +31,18 @@ public class AddressServiceImpl implements AddressService {
         address.setUser(user);
 
         return addressMapper.toDTO(addressRepository.save(address));
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<AddressResponseDTO> findAuthenticatedUserAddress() {
+
+        User user = currentUserService.getAuthenticatedUser();
+
+        return user.getAddresses()
+                .stream()
+                .map(addressMapper::toDTO)
+                .toList();
     }
 }
 
