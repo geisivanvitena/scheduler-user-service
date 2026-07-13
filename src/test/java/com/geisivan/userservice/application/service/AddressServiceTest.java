@@ -63,7 +63,7 @@ class AddressServiceTest {
     }
 
     @Test
-    void createAddress_shouldCreateAddress_whenUserIsAuthenticated() {
+    void createAuthenticatedUserAddress_shouldCreateAddress_whenUserIsAuthenticated() {
 
         AddressRequestDTO request =
                 new AddressRequestDTO(
@@ -110,5 +110,66 @@ class AddressServiceTest {
         verify(addressMapper).toEntity(request);
         verify(addressRepository).save(address);
         verify(addressMapper).toDTO(address);
+    }
+
+    @Test
+    void findAuthenticatedUserAddresses_shouldReturnAllAddresses_whenUserHasAddresses() {
+
+        Address secondAddress = new Address();
+
+        secondAddress.setId(2L);
+        secondAddress.setStreet("Oak Avenue");
+        secondAddress.setNumber("456");
+        secondAddress.setNeighborhood("West Side");
+        secondAddress.setCity("Los Angeles");
+        secondAddress.setState("CA");
+        secondAddress.setPostalCode("90001-000");
+
+        user.getAddresses().add(address);
+        user.getAddresses().add(secondAddress);
+
+        AddressResponseDTO firstResponse =
+                new AddressResponseDTO(
+                        1L,
+                        "Main Street",
+                        "123",
+                        "Downtown",
+                        "New York",
+                        "NY",
+                        "10001-000"
+                );
+
+        AddressResponseDTO secondResponse =
+                new AddressResponseDTO(
+                        2L,
+                        "Oak Avenue",
+                        "456",
+                        "West Side",
+                        "Los Angeles",
+                        "CA",
+                        "90001-000"
+                );
+
+        when(currentUserService.getAuthenticatedUser())
+                .thenReturn(user);
+
+        when(addressMapper.toDTO(address))
+                .thenReturn(firstResponse);
+
+        when(addressMapper.toDTO(secondAddress))
+                .thenReturn(secondResponse);
+
+        var result =
+                addressServiceImpl.findAuthenticatedUserAddresses();
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+
+        assertEquals("Main Street", result.get(0).street());
+        assertEquals("Oak Avenue", result.get(1).street());
+
+        verify(currentUserService).getAuthenticatedUser();
+        verify(addressMapper).toDTO(address);
+        verify(addressMapper).toDTO(secondAddress);
     }
 }

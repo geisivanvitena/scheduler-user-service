@@ -35,7 +35,7 @@ public class AddressServiceImpl implements AddressService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<AddressResponseDTO> findAuthenticatedUserAddress() {
+    public List<AddressResponseDTO> findAuthenticatedUserAddresses() {
 
         User user = currentUserService.getAuthenticatedUser();
 

@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -28,9 +27,9 @@ public class AddressController {
     }
 
     @GetMapping
-    public ResponseEntity<List<AddressResponseDTO>> findAuthenticatedUserAddress() {
+    public ResponseEntity<List<AddressResponseDTO>> findAuthenticatedUserAddresses() {
 
         return ResponseEntity.ok(
-                addressService.findAuthenticatedUserAddress());
+                addressService.findAuthenticatedUserAddresses());
     }
 }

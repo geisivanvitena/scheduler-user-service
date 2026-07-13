@@ -12,8 +12,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -58,7 +60,7 @@ class AddressControllerTest {
     """;
 
     @Test
-    void createAddress_shouldReturn201_whenRequestIsValid()
+    void createAuthenticatedUserAddress_shouldReturn201_whenRequestIsValid()
             throws Exception {
 
         AddressResponseDTO response =
@@ -107,7 +109,7 @@ class AddressControllerTest {
     }
 
     @Test
-    void createAddress_shouldReturn400_whenRequestIsInvalid()
+    void createAuthenticatedUserAddress_shouldReturn400_whenRequestIsInvalid()
             throws Exception {
 
         mockMvc.perform(post(BASE_URL)
@@ -117,6 +119,58 @@ class AddressControllerTest {
                 .andExpect(status().isBadRequest());
 
         verifyNoInteractions(addressService);
+    }
+
+    @Test
+    void findAuthenticatedUserAddresses_shouldReturn200_whenAddressesExist()
+            throws Exception {
+
+        AddressResponseDTO firstAddress =
+                new AddressResponseDTO(
+                        1L,
+                        "Main Street",
+                        "123",
+                        "Downtown",
+                        "New York",
+                        "NY",
+                        "10001-000"
+                );
+
+        AddressResponseDTO secondAddress =
+                new AddressResponseDTO(
+                        2L,
+                        "Oak Avenue",
+                        "456",
+                        "West Side",
+                        "Los Angeles",
+                        "CA",
+                        "90001-000"
+                );
+
+        when(addressService.findAuthenticatedUserAddresses())
+                .thenReturn(List.of(firstAddress, secondAddress));
+
+        mockMvc.perform(get(BASE_URL))
+
+                .andExpect(status().isOk())
+
+                .andExpect(jsonPath("$.length()")
+                        .value(2))
+
+                .andExpect(jsonPath("$[0].id")
+                        .value(1))
+
+                .andExpect(jsonPath("$[0].street")
+                        .value("Main Street"))
+
+                .andExpect(jsonPath("$[1].id")
+                        .value(2))
+
+                .andExpect(jsonPath("$[1].street")
+                        .value("Oak Avenue"));
+
+        verify(addressService)
+                .findAuthenticatedUserAddresses();
     }
 }
 
