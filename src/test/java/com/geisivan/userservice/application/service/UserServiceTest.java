@@ -6,22 +6,17 @@ import com.geisivan.userservice.application.mapper.UserMapper;
 import com.geisivan.userservice.application.service.impl.UserServiceImpl;
 import com.geisivan.userservice.domain.entity.User;
 import com.geisivan.userservice.domain.enums.UserStatus;
-import com.geisivan.userservice.infrastructure.exception.custom.ResourceNotFoundException;
 import com.geisivan.userservice.infrastructure.repository.UserRepository;
-import com.geisivan.userservice.infrastructure.security.util.AuthenticatedUserUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -29,20 +24,24 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
+    private static final String EMAIL = "teste@gmail.com";
+
+    private User user;
+
+    @Mock
+    private CurrentUserService currentUserService;
+
     @Mock
     private UserRepository userRepository;
 
     @Mock
-    private UserMapper userMapper;
+    private PasswordEncoder passwordEncoder;
 
-    @Mock private PasswordEncoder passwordEncoder;
+    @Mock
+    private UserMapper userMapper;
 
     @InjectMocks
     private UserServiceImpl userServiceImpl;
-
-    private User user;
-
-    private static final String EMAIL = "teste@gmail.com";
 
     @BeforeEach
     void setUp() {
@@ -62,8 +61,6 @@ class UserServiceTest {
     @Test
     void findAuthenticatedUser_shouldReturnUser_whenUserExists() {
 
-        Long id = 1L;
-
         UserResponseDTO response =
                 new UserResponseDTO(
                         1L,
@@ -77,54 +74,23 @@ class UserServiceTest {
                         null
                 );
 
-        try (MockedStatic<AuthenticatedUserUtil> mocked =
-                     Mockito.mockStatic(AuthenticatedUserUtil.class)) {
+        when(currentUserService.getAuthenticatedUser())
+                .thenReturn(user);
 
-            mocked.when(AuthenticatedUserUtil::getId)
-                    .thenReturn(id);
+        when(userMapper.toDTO(user))
+                .thenReturn(response);
 
-            when(userRepository.findById(id))
-                    .thenReturn(Optional.of(user));
+        var result = userServiceImpl.findAuthenticatedUser();
 
-            when(userMapper.toDTO(user))
-                    .thenReturn(response);
+        assertNotNull(result);
+        assertEquals(EMAIL, result.email());
 
-            var result = userServiceImpl.findAuthenticatedUser();
-
-            assertNotNull(result);
-            assertEquals(EMAIL, result.email());
-
-            verify(userRepository).findById(id);
-            verify(userMapper).toDTO(user);
-        }
-    }
-
-    @Test
-    void findAuthenticatedUser_shouldThrowResourceNotFoundException_whenUserDoesNotExist() {
-
-        Long id = 1L;
-
-        try (MockedStatic<AuthenticatedUserUtil> mocked =
-                     Mockito.mockStatic(AuthenticatedUserUtil.class)) {
-
-            mocked.when(AuthenticatedUserUtil::getId)
-                    .thenReturn(id);
-
-            when(userRepository.findById(id))
-                    .thenReturn(Optional.empty());
-
-            assertThrows(ResourceNotFoundException.class,
-                    () -> userServiceImpl.findAuthenticatedUser());
-
-            verify(userRepository).findById(id);
-            verifyNoInteractions(userMapper);
-        }
+        verify(currentUserService).getAuthenticatedUser();
+        verify(userMapper).toDTO(user);
     }
 
     @Test
     void updateAuthenticatedUser_shouldReturnUpdatedUser_whenUserExists() {
-
-        Long id = 1L;
 
         UserUpdateRequestDTO dto =
                 new UserUpdateRequestDTO(
@@ -137,7 +103,7 @@ class UserServiceTest {
 
         UserResponseDTO response =
                 new UserResponseDTO(
-                        id,
+                        1L,
                         "Updated User",
                         "updated@gmail.com",
                         UserStatus.ACTIVE,
@@ -148,36 +114,27 @@ class UserServiceTest {
                         Instant.now()
                 );
 
-        try (MockedStatic<AuthenticatedUserUtil> mocked =
-                     Mockito.mockStatic(AuthenticatedUserUtil.class)) {
+        when(currentUserService.getAuthenticatedUser())
+                .thenReturn(user);
 
-            mocked.when(AuthenticatedUserUtil::getId)
-                    .thenReturn(id);
+        when(userMapper.toDTO(user))
+                .thenReturn(response);
 
-            when(userRepository.findById(id))
-                    .thenReturn(Optional.of(user));
+        var result =
+                userServiceImpl.updateAuthenticatedUser(dto);
 
-            when(userMapper.toDTO(user))
-                    .thenReturn(response);
+        assertNotNull(result);
+        assertEquals("Updated User", result.name());
+        assertEquals("updated@gmail.com", result.email());
 
-            var result =
-                    userServiceImpl.updateAuthenticatedUser(dto);
-
-            assertNotNull(result);
-            assertEquals("Updated User", result.name());
-            assertEquals("updated@gmail.com", result.email());
-
-            verify(userRepository).findById(id);
-            verify(userMapper).update(dto, user);
-            verify(userRepository).flush();
-            verify(userMapper).toDTO(user);
-        }
+        verify(currentUserService).getAuthenticatedUser();
+        verify(userMapper).update(dto, user);
+        verify(userRepository).flush();
+        verify(userMapper).toDTO(user);
     }
 
     @Test
     void updateAuthenticatedUser_shouldEncodePassword_whenPasswordIsProvided() {
-
-        Long id = 1L;
 
         UserUpdateRequestDTO dto =
                 new UserUpdateRequestDTO(
@@ -190,7 +147,7 @@ class UserServiceTest {
 
         UserResponseDTO response =
                 new UserResponseDTO(
-                        id,
+                        1L,
                         "Updated User",
                         "updated@gmail.com",
                         UserStatus.ACTIVE,
@@ -201,39 +158,31 @@ class UserServiceTest {
                         Instant.now()
                 );
 
-        try (MockedStatic<AuthenticatedUserUtil> mocked =
-                     Mockito.mockStatic(AuthenticatedUserUtil.class)) {
+        when(currentUserService.getAuthenticatedUser())
+                .thenReturn(user);
 
-            mocked.when(AuthenticatedUserUtil::getId)
-                    .thenReturn(id);
+        when(passwordEncoder.encode("123456"))
+                .thenReturn("encoded-password");
 
-            when(userRepository.findById(id))
-                    .thenReturn(Optional.of(user));
+        when(userMapper.toDTO(user))
+                .thenReturn(response);
 
-            when(passwordEncoder.encode("123456"))
-                    .thenReturn("encoded-password");
+        var result =
+                userServiceImpl.updateAuthenticatedUser(dto);
 
-            when(userMapper.toDTO(user))
-                    .thenReturn(response);
+        assertNotNull(result);
 
-            var result = userServiceImpl.updateAuthenticatedUser(dto);
+        verify(currentUserService).getAuthenticatedUser();
+        verify(userMapper).update(dto, user);
+        verify(passwordEncoder).encode("123456");
+        verify(userRepository).flush();
+        verify(userMapper).toDTO(user);
 
-            assertNotNull(result);
-
-            verify(userRepository).findById(id);
-            verify(userMapper).update(dto, user);
-            verify(passwordEncoder).encode("123456");
-            verify(userRepository).flush();
-            verify(userMapper).toDTO(user);
-
-            assertEquals( "encoded-password", user.getPassword());
-        }
+        assertEquals("encoded-password", user.getPassword());
     }
 
     @Test
     void updateAuthenticatedUser_shouldNotEncodePassword_whenPasswordIsNull() {
-
-        Long id = 1L;
 
         UserUpdateRequestDTO dto =
                 new UserUpdateRequestDTO(
@@ -246,7 +195,7 @@ class UserServiceTest {
 
         UserResponseDTO response =
                 new UserResponseDTO(
-                        id,
+                       1L,
                         "Updated User",
                         "updated@gmail.com",
                         UserStatus.ACTIVE,
@@ -257,35 +206,25 @@ class UserServiceTest {
                         Instant.now()
                 );
 
-        try (MockedStatic<AuthenticatedUserUtil> mocked =
-                     Mockito.mockStatic(AuthenticatedUserUtil.class)) {
+        when(currentUserService.getAuthenticatedUser())
+                .thenReturn(user);
 
-            mocked.when(AuthenticatedUserUtil::getId)
-                    .thenReturn(id);
+        when(userMapper.toDTO(user))
+                .thenReturn(response);
 
-            when(userRepository.findById(id))
-                    .thenReturn(Optional.of(user));
+        var result =
+                userServiceImpl.updateAuthenticatedUser(dto);
 
-            when(userMapper.toDTO(user))
-                    .thenReturn(response);
-
-            var result =
-                    userServiceImpl.updateAuthenticatedUser(dto);
-
-            assertNotNull(result);
-
-            verify(userRepository).findById(id);
-            verify(userMapper).update(dto, user);
-            verify(passwordEncoder, never()).encode(anyString());
-            verify(userRepository).flush();
-            verify(userMapper).toDTO(user);
-        }
+        assertNotNull(result);
+        verify(currentUserService).getAuthenticatedUser();
+        verify(userMapper).update(dto, user);
+        verify(passwordEncoder, never()).encode(anyString());
+        verify(userRepository).flush();
+        verify(userMapper).toDTO(user);
     }
 
     @Test
     void updateAuthenticatedUser_shouldNotEncodePassword_whenPasswordIsBlank() {
-
-        Long id = 1L;
 
         UserUpdateRequestDTO dto =
                 new UserUpdateRequestDTO(
@@ -298,7 +237,7 @@ class UserServiceTest {
 
         UserResponseDTO response =
                 new UserResponseDTO(
-                        id,
+                        1L,
                         "Updated User",
                         "updated@gmail.com",
                         UserStatus.ACTIVE,
@@ -309,98 +248,39 @@ class UserServiceTest {
                         Instant.now()
                 );
 
-        try (MockedStatic<AuthenticatedUserUtil> mocked =
-                     Mockito.mockStatic(AuthenticatedUserUtil.class)) {
+        when(currentUserService.getAuthenticatedUser())
+                .thenReturn(user);
 
-            mocked.when(AuthenticatedUserUtil::getId)
-                    .thenReturn(id);
+        when(userMapper.toDTO(user))
+                .thenReturn(response);
 
-            when(userRepository.findById(id))
-                    .thenReturn(Optional.of(user));
+        var result =
+                userServiceImpl.updateAuthenticatedUser(dto);
 
-            when(userMapper.toDTO(user))
-                    .thenReturn(response);
+        assertNotNull(result);
 
-            var result =
-                    userServiceImpl.updateAuthenticatedUser(dto);
-
-            assertNotNull(result);
-
-            verify(userRepository).findById(id);
-            verify(userMapper).update(dto, user);
-            verify(passwordEncoder, never())
-                    .encode(anyString());
-            verify(userRepository).flush();
-            verify(userMapper).toDTO(user);
-        }
-    }
-
-    @Test
-    void updateAuthenticatedUser_shouldThrowResourceNotFoundException_whenUserDoesNotExist() {
-
-        Long id = 1L;
-
-        UserUpdateRequestDTO dto =
-                new UserUpdateRequestDTO(
-                        "Updated User",
-                        "updated@gmail.com",
-                        null,
-                        null,
-                        null
-                );
-
-        try (MockedStatic<AuthenticatedUserUtil> mocked =
-                     Mockito.mockStatic(AuthenticatedUserUtil.class)) {
-
-            mocked.when(AuthenticatedUserUtil::getId).thenReturn(id);
-
-            when(userRepository.findById(id)).thenReturn(Optional.empty());
-
-            assertThrows(ResourceNotFoundException.class,
-                    () -> userServiceImpl.updateAuthenticatedUser(dto));
-
-            verify(userRepository).findById(id);
-            verifyNoInteractions(userMapper);
-        }
+        verify(currentUserService).getAuthenticatedUser();
+        verify(userMapper).update(dto, user);
+        verify(passwordEncoder, never()).encode(anyString());
+        verify(userRepository).flush();
+        verify(userMapper).toDTO(user);
     }
 
     @Test
     void deleteAuthenticatedUser_shouldDeleteUser_whenUserExists() {
 
-        Long id = 1L;
+        when(currentUserService.getAuthenticatedUser())
+                .thenReturn(user);
 
-        try (MockedStatic<AuthenticatedUserUtil> mocked =
-                     Mockito.mockStatic(AuthenticatedUserUtil.class)) {
 
-            mocked.when(AuthenticatedUserUtil::getId).thenReturn(id);
+        userServiceImpl.deleteAuthenticatedUser();
 
-            when(userRepository.findById(id)).thenReturn(Optional.of(user));
 
-            userServiceImpl.deleteAuthenticatedUser();
+        verify(currentUserService)
+                .getAuthenticatedUser();
 
-            verify(userRepository).findById(id);
-            verify(userRepository).delete(user);
-        }
-    }
-
-    @Test
-    void deleteAuthenticatedUser_shouldThrowResourceNotFoundException_whenUserDoesNotExist() {
-
-        Long id = 1L;
-
-        try (MockedStatic<AuthenticatedUserUtil> mocked =
-                     Mockito.mockStatic(AuthenticatedUserUtil.class)) {
-
-            mocked.when(AuthenticatedUserUtil::getId).thenReturn(id);
-
-            when(userRepository.findById(id)).thenReturn(Optional.empty());
-
-            assertThrows(ResourceNotFoundException.class,
-                    () -> userServiceImpl.deleteAuthenticatedUser());
-
-            verify(userRepository).findById(id);
-            verify(userRepository, never()).delete(any());
-        }
+        verify(userRepository)
+                .delete(user);
     }
 }
 
