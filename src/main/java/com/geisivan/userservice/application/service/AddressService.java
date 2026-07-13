@@ -8,5 +8,5 @@ public interface AddressService {
 
     AddressResponseDTO createAuthenticatedUserAddress(AddressRequestDTO dto);
 
-    List<AddressResponseDTO> findAuthenticatedUserAddress();
+    List<AddressResponseDTO> findAuthenticatedUserAddresses();
 }
