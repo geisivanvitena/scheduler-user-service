@@ -1,12 +1,14 @@
 package com.geisivan.userservice.application.service.impl;
 
 import com.geisivan.userservice.application.dto.request.AddressRequestDTO;
+import com.geisivan.userservice.application.dto.request.AddressUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.response.AddressResponseDTO;
 import com.geisivan.userservice.application.mapper.AddressMapper;
 import com.geisivan.userservice.application.service.AddressService;
 import com.geisivan.userservice.application.service.CurrentUserService;
 import com.geisivan.userservice.domain.entity.Address;
 import com.geisivan.userservice.domain.entity.User;
+import com.geisivan.userservice.infrastructure.exception.custom.ResourceNotFoundException;
 import com.geisivan.userservice.infrastructure.repository.AddressRepository;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +45,23 @@ public class AddressServiceImpl implements AddressService {
                 .stream()
                 .map(addressMapper::toDTO)
                 .toList();
+    }
+
+    @Transactional
+    @Override
+    public AddressResponseDTO updateAuthenticatedUserAddress(
+            Long addressId, AddressUpdateRequestDTO dto) {
+
+        User user = currentUserService.getAuthenticatedUser();
+
+        Address address = addressRepository
+                .findByIdAndUserId(addressId, user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Address not found for the authenticated user."));
+
+        addressMapper.update(dto, address);
+
+        return addressMapper.toDTO(addressRepository.save(address));
     }
 }
 

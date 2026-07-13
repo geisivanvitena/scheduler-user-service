@@ -1,6 +1,7 @@
 package com.geisivan.userservice.application.mapper;
 
 import com.geisivan.userservice.application.dto.request.AddressRequestDTO;
+import com.geisivan.userservice.application.dto.request.AddressUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.response.AddressResponseDTO;
 import com.geisivan.userservice.domain.entity.Address;
 import org.springframework.stereotype.Component;
@@ -33,24 +34,24 @@ public class AddressMapper {
         );
     }
 
-    public void update(AddressRequestDTO dto, Address address) {
+    public void update(AddressUpdateRequestDTO dto, Address address) {
 
-        if (dto.street() != null && dto.street().isBlank()){
+        if (dto.street() != null && !dto.street().isBlank()){
             address.setStreet(dto.street());
         }
-        if (dto.number() != null && dto.number().isBlank()) {
+        if (dto.number() != null && !dto.number().isBlank()) {
             address.setNumber(dto.number());
         }
-        if (dto.neighborhood() != null && dto.neighborhood().isBlank()) {
+        if (dto.neighborhood() != null && !dto.neighborhood().isBlank()) {
             address.setNeighborhood(dto.neighborhood());
         }
-        if (dto.city() != null && dto.city().isBlank()) {
+        if (dto.city() != null && !dto.city().isBlank()) {
             address.setCity(dto.city());
         }
-        if (dto.state() != null && dto.state().isBlank()) {
+        if (dto.state() != null && !dto.state().isBlank()) {
             address.setState(dto.state());
         }
-        if (dto.postalCode() != null && dto.postalCode().isBlank()) {
+        if (dto.postalCode() != null && !dto.postalCode().isBlank()) {
             address.setPostalCode(dto.postalCode());
         }
     }
