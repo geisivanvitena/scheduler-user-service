@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 public class AddressMapper {
 
     public Address toEntity(AddressRequestDTO dto) {
+
         return Address.builder()
                 .street(dto.street())
                 .number(dto.number())
@@ -16,10 +17,11 @@ public class AddressMapper {
                 .city(dto.city())
                 .state(dto.state())
                 .postalCode(dto.postalCode())
-                .build();
+        .build();
     }
 
     public AddressResponseDTO toDTO(Address address) {
+
         return new AddressResponseDTO(
                 address.getId(),
                 address.getStreet(),
