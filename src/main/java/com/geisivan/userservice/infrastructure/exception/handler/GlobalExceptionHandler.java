@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.time.Instant;
@@ -63,8 +64,31 @@ public class GlobalExceptionHandler {
                         exception.getMessage(),
                         request.getRequestURI(),
                         ErrorCode.UNAUTHORIZED,
-                        List.of()
-                ));
+                        List.of()));
+    }
+
+    // Handles validation exceptions
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponseDTO> handleValidationException(
+            MethodArgumentNotValidException exception,
+            HttpServletRequest request) {
+
+        List<String> errors = exception.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .toList();
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponseDTO(
+                        Instant.now(),
+                        HttpStatus.BAD_REQUEST.value(),
+                        HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                        "Validation error",
+                        request.getRequestURI(),
+                        ErrorCode.VALIDATION_ERROR,
+                        errors));
     }
 
     // Handles unexpected exceptions.
