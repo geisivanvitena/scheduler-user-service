@@ -72,7 +72,7 @@ class AddressControllerTest {
                         "10001-000"
                 );
 
-        when(addressService.createAddress(any(AddressRequestDTO.class)))
+        when(addressService.createAuthenticatedUserAddress(any(AddressRequestDTO.class)))
                 .thenReturn(response);
 
         mockMvc.perform(post(BASE_URL)
@@ -103,7 +103,7 @@ class AddressControllerTest {
                         .value("10001-000"));
 
         verify(addressService)
-                .createAddress(any(AddressRequestDTO.class));
+                .createAuthenticatedUserAddress(any(AddressRequestDTO.class));
     }
 
     @Test

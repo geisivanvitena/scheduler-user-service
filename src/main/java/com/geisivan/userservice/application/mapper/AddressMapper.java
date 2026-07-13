@@ -32,4 +32,26 @@ public class AddressMapper {
                 address.getPostalCode()
         );
     }
+
+    public void update(AddressRequestDTO dto, Address address) {
+
+        if (dto.street() != null && dto.street().isBlank()){
+            address.setStreet(dto.street());
+        }
+        if (dto.number() != null && dto.number().isBlank()) {
+            address.setNumber(dto.number());
+        }
+        if (dto.neighborhood() != null && dto.neighborhood().isBlank()) {
+            address.setNeighborhood(dto.neighborhood());
+        }
+        if (dto.city() != null && dto.city().isBlank()) {
+            address.setCity(dto.city());
+        }
+        if (dto.state() != null && dto.state().isBlank()) {
+            address.setState(dto.state());
+        }
+        if (dto.postalCode() != null && dto.postalCode().isBlank()) {
+            address.setPostalCode(dto.postalCode());
+        }
+    }
 }
