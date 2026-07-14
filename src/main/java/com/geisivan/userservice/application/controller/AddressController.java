@@ -1,6 +1,7 @@
 package com.geisivan.userservice.application.controller;
 
 import com.geisivan.userservice.application.dto.request.AddressRequestDTO;
+import com.geisivan.userservice.application.dto.request.AddressUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.response.AddressResponseDTO;
 import com.geisivan.userservice.application.service.AddressService;
 import jakarta.validation.Valid;
@@ -31,5 +32,14 @@ public class AddressController {
 
         return ResponseEntity.ok(
                 addressService.findAuthenticatedUserAddresses());
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<AddressResponseDTO> updateAuthenticatedUserAddress(
+            @PathVariable Long id,
+            @Valid @RequestBody AddressUpdateRequestDTO dto) {
+
+        return ResponseEntity.ok(
+                addressService.updateAuthenticatedUserAddress(id, dto));
     }
 }
