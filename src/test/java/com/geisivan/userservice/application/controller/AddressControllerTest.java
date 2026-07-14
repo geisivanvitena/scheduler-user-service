@@ -4,6 +4,7 @@ import com.geisivan.userservice.application.dto.request.AddressRequestDTO;
 import com.geisivan.userservice.application.dto.request.AddressUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.response.AddressResponseDTO;
 import com.geisivan.userservice.application.service.AddressService;
+import com.geisivan.userservice.infrastructure.exception.custom.ResourceNotFoundException;
 import com.geisivan.userservice.infrastructure.security.jwt.JwtUtil;
 import com.geisivan.userservice.infrastructure.security.service.UserDetailsServiceImpl;
 import org.junit.jupiter.api.Test;
@@ -16,9 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = AddressController.class)
@@ -242,6 +241,35 @@ class AddressControllerTest {
                 .andExpect(status().isBadRequest());
 
         verifyNoInteractions(addressService);
+    }
+
+    @Test
+    void deleteAuthenticatedUserAddress_shouldReturn204_whenAddressIsDeleted()
+            throws Exception {
+
+        mockMvc.perform(delete(BASE_URL + "/1"))
+                .andExpect(status().isNoContent());
+
+        verify(addressService).deleteAuthenticatedUserAddress(1L);
+    }
+
+    @Test
+    void deleteAuthenticatedUserAddress_shouldReturn404_whenAddressDoesNotExist()
+            throws Exception {
+
+        doThrow(new ResourceNotFoundException(
+                "Address not found for the authenticated user."))
+
+                .when(addressService).deleteAuthenticatedUserAddress(99L);
+
+        mockMvc.perform(delete(BASE_URL + "/99"))
+
+                .andExpect(status().isNotFound())
+
+                .andExpect(jsonPath("$.message")
+                        .value("Address not found for the authenticated user."));
+
+        verify(addressService).deleteAuthenticatedUserAddress(99L);
     }
 }
 
