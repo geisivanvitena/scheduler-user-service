@@ -11,5 +11,7 @@ public interface AddressService {
 
     List<AddressResponseDTO> findAuthenticatedUserAddresses();
 
-    AddressResponseDTO updateAuthenticatedUserAddress(Long id, AddressUpdateRequestDTO dto);
+    AddressResponseDTO updateAuthenticatedUserAddress(Long addressId, AddressUpdateRequestDTO dto);
+
+    void deleteAuthenticatedUserAddress(Long addressId);
 }

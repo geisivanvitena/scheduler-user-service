@@ -42,4 +42,13 @@ public class AddressController {
         return ResponseEntity.ok(
                 addressService.updateAuthenticatedUserAddress(addressId, dto));
     }
+
+    @DeleteMapping("/{addressId}")
+    public ResponseEntity<Void> deleteAuthenticatedUserAddress(
+            @PathVariable("addressId") Long addressId) {
+
+        addressService.deleteAuthenticatedUserAddress(addressId);
+
+        return ResponseEntity.noContent().build();
+    }
 }
