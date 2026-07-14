@@ -1,6 +1,7 @@
 package com.geisivan.userservice.application.controller;
 
 import com.geisivan.userservice.application.dto.request.AddressRequestDTO;
+import com.geisivan.userservice.application.dto.request.AddressUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.response.AddressResponseDTO;
 import com.geisivan.userservice.application.service.AddressService;
 import com.geisivan.userservice.infrastructure.security.jwt.JwtUtil;
@@ -15,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -58,6 +60,28 @@ class AddressControllerTest {
         "postalCode": "123"
     }
     """;
+
+    private static final String VALID_UPDATE_ADDRESS_REQUEST = """
+{
+    "street": "Ocean Drive",
+    "number": "1500",
+    "neighborhood": "South Beach",
+    "city": "Miami",
+    "state": "FL",
+    "postalCode": "33139-000"
+}
+""";
+
+    private static final String INVALID_UPDATE_ADDRESS_REQUEST = """
+{
+    "street": "",
+    "number": "",
+    "neighborhood": "",
+    "city": "",
+    "state": "FLORIDA",
+    "postalCode": "123"
+}
+""";
 
     @Test
     void createAuthenticatedUserAddress_shouldReturn201_whenRequestIsValid()
@@ -171,6 +195,53 @@ class AddressControllerTest {
 
         verify(addressService)
                 .findAuthenticatedUserAddresses();
+    }
+
+    @Test
+    void updateAuthenticatedUserAddress_shouldReturn200_whenRequestIsValid()
+            throws Exception {
+
+        AddressResponseDTO response =
+                new AddressResponseDTO(
+                        1L,
+                        "Ocean Drive",
+                        "1500",
+                        "South Beach",
+                        "Miami",
+                        "FL",
+                        "33139-000"
+                );
+
+        when(addressService.updateAuthenticatedUserAddress(
+                eq(1L),
+                any(AddressUpdateRequestDTO.class)))
+                .thenReturn(response);
+
+        mockMvc.perform(
+                put(BASE_URL + "/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(VALID_UPDATE_ADDRESS_REQUEST)
+        )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.street").value("Ocean Drive"))
+                .andExpect(jsonPath("$.city").value("Miami"));
+
+        verify(addressService).updateAuthenticatedUserAddress(eq(1L),
+                any(AddressUpdateRequestDTO.class));
+    }
+
+    @Test
+    void updateAuthenticatedUserAddress_shouldReturn400_whenRequestIsInvalid()
+            throws Exception {
+
+        mockMvc.perform(put(BASE_URL + "/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(INVALID_UPDATE_ADDRESS_REQUEST))
+
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(addressService);
     }
 }
 

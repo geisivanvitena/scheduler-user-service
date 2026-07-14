@@ -34,12 +34,12 @@ public class AddressController {
                 addressService.findAuthenticatedUserAddresses());
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{addressId}")
     public ResponseEntity<AddressResponseDTO> updateAuthenticatedUserAddress(
-            @PathVariable Long id,
+            @PathVariable("addressId") Long addressId,
             @Valid @RequestBody AddressUpdateRequestDTO dto) {
 
         return ResponseEntity.ok(
-                addressService.updateAuthenticatedUserAddress(id, dto));
+                addressService.updateAuthenticatedUserAddress(addressId, dto));
     }
 }
