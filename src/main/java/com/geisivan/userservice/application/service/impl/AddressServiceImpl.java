@@ -41,10 +41,8 @@ public class AddressServiceImpl implements AddressService {
 
         User user = currentUserService.getAuthenticatedUser();
 
-        return user.getAddresses()
-                .stream()
-                .map(addressMapper::toDTO)
-                .toList();
+        return user.getAddresses().stream()
+                .map(addressMapper::toDTO).toList();
     }
 
     @Transactional

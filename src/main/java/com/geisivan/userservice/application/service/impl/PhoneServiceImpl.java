@@ -1,12 +1,14 @@
 package com.geisivan.userservice.application.service.impl;
 
 import com.geisivan.userservice.application.dto.request.PhoneRequestDTO;
+import com.geisivan.userservice.application.dto.request.PhoneUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.response.PhoneResponseDTO;
 import com.geisivan.userservice.application.mapper.PhoneMapper;
 import com.geisivan.userservice.application.service.CurrentUserService;
 import com.geisivan.userservice.application.service.PhoneService;
 import com.geisivan.userservice.domain.entity.Phone;
 import com.geisivan.userservice.domain.entity.User;
+import com.geisivan.userservice.infrastructure.exception.custom.ResourceNotFoundException;
 import com.geisivan.userservice.infrastructure.repository.PhoneRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -39,11 +41,30 @@ public class PhoneServiceImpl implements PhoneService {
 
         User user = currentUserService.getAuthenticatedUser();
 
-        return user.getPhones()
-                .stream()
-                .map(phoneMapper::toDTO)
-                .toList();
+        return user.getPhones().stream()
+                .map(phoneMapper::toDTO).toList();
     }
 
+    @Transactional
+    @Override
+    public PhoneResponseDTO updateAuthenticatedUserPhone(
+            Long phoneId, PhoneUpdateRequestDTO dto) {
 
+        User user = currentUserService.getAuthenticatedUser();
+
+        Phone phone = getPhoneByIdAndUserId(phoneId, user.getId());
+        phone.setUser(user);
+
+        phoneMapper.update(dto, phone);
+
+        return phoneMapper.toDTO(phoneRepository.save(phone));
+    }
+
+    private Phone getPhoneByIdAndUserId(Long phoneId, Long userId) {
+
+        return phoneRepository.findByIdAndUserId(phoneId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Phone not found for the authenticated user."));
+
+    }
 }
