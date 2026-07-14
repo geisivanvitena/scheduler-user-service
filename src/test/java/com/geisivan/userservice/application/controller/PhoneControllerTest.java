@@ -13,10 +13,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -76,10 +78,17 @@ class PhoneControllerTest {
 
                 .andExpect(status().isCreated())
 
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.areaCode").value("71"))
-                .andExpect(jsonPath("$.phoneNumber").value("999999999"))
-                .andExpect(jsonPath("$.phoneType").value("MOBILE"));
+                .andExpect(jsonPath("$.id")
+                        .value(1))
+
+                .andExpect(jsonPath("$.areaCode")
+                        .value("71"))
+
+                .andExpect(jsonPath("$.phoneNumber")
+                        .value("999999999"))
+
+                .andExpect(jsonPath("$.phoneType")
+                        .value("MOBILE"));
 
         verify(phoneService).createAuthenticatedUserPhone(
                 any(PhoneRequestDTO.class));
@@ -97,5 +106,56 @@ class PhoneControllerTest {
                 .andExpect(status().isBadRequest());
 
         verifyNoInteractions(phoneService);
+    }
+
+    @Test
+    void findAuthenticatedUserPhones_shouldReturn200_whenPhonesExist()
+            throws Exception {
+
+        PhoneResponseDTO firstPhone =
+                new PhoneResponseDTO(
+                        1L,
+                        "71",
+                        "999887766",
+                        PhoneType.MOBILE
+                );
+
+        PhoneResponseDTO secondPhone =
+                new PhoneResponseDTO(
+                        2L,
+                        "41",
+                        "992378825",
+                        PhoneType.WORK
+                );
+
+        when(phoneService.findAuthenticatedUserPhones())
+                .thenReturn(List.of(firstPhone, secondPhone));
+
+        mockMvc.perform(get(BASE_URL))
+
+                .andExpect(status().isOk())
+
+                .andExpect(jsonPath("$.length()")
+                        .value(2))
+
+                .andExpect(jsonPath("$[0].id")
+                        .value(1))
+
+                .andExpect(jsonPath("$[0].areaCode")
+                        .value("71"))
+
+                .andExpect(jsonPath("$[0].phoneNumber")
+                        .value("999887766"))
+
+                .andExpect(jsonPath("$[1].id")
+                        .value(2))
+
+                .andExpect(jsonPath("$[1].areaCode")
+                        .value("41"))
+
+                .andExpect(jsonPath("$[1].phoneNumber")
+                        .value("992378825"));
+
+        verify(phoneService).findAuthenticatedUserPhones();
     }
 }

@@ -222,9 +222,15 @@ class AddressControllerTest {
                         .content(VALID_UPDATE_ADDRESS_REQUEST)
         )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.street").value("Ocean Drive"))
-                .andExpect(jsonPath("$.city").value("Miami"));
+
+                .andExpect(jsonPath("$.id")
+                        .value(1))
+
+                .andExpect(jsonPath("$.street")
+                        .value("Ocean Drive"))
+
+                .andExpect(jsonPath("$.city")
+                        .value("Miami"));
 
         verify(addressService).updateAuthenticatedUserAddress(eq(1L),
                 any(AddressUpdateRequestDTO.class));
