@@ -1,12 +1,14 @@
 package com.geisivan.userservice.application.service;
 
 import com.geisivan.userservice.application.dto.request.AddressRequestDTO;
+import com.geisivan.userservice.application.dto.request.AddressUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.response.AddressResponseDTO;
 import com.geisivan.userservice.application.mapper.AddressMapper;
 import com.geisivan.userservice.application.service.impl.AddressServiceImpl;
 import com.geisivan.userservice.domain.entity.Address;
 import com.geisivan.userservice.domain.entity.User;
 import com.geisivan.userservice.domain.enums.UserStatus;
+import com.geisivan.userservice.infrastructure.exception.custom.ResourceNotFoundException;
 import com.geisivan.userservice.infrastructure.repository.AddressRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -171,5 +174,91 @@ class AddressServiceTest {
         verify(currentUserService).getAuthenticatedUser();
         verify(addressMapper).toDTO(address);
         verify(addressMapper).toDTO(secondAddress);
+    }
+
+    @Test
+    void updateAuthenticatedUserAddress_shouldUpdateAddress_whenAddressExists() {
+
+        Long addressId = 1L;
+
+        AddressUpdateRequestDTO request =
+                new AddressUpdateRequestDTO(
+                        "Ocean Drive",
+                        "1500",
+                        "South Beach",
+                        "Miami",
+                        "FL",
+                        "33139-000"
+                );
+
+        AddressResponseDTO response =
+                new AddressResponseDTO(
+                        1L,
+                        "Ocean Drive",
+                        "1500",
+                        "South Beach",
+                        "Miami",
+                        "FL",
+                        "33139-000"
+                );
+
+        when(currentUserService.getAuthenticatedUser())
+                .thenReturn(user);
+
+        when(addressRepository.findByIdAndUserId(addressId, user.getId()))
+                .thenReturn(Optional.of(address));
+
+        when(addressRepository.save(address))
+                .thenReturn(address);
+
+        when(addressMapper.toDTO(address))
+                .thenReturn(response);
+
+        var result =
+                addressServiceImpl.updateAuthenticatedUserAddress(
+                        addressId,
+                        request);
+
+        assertNotNull(result);
+        assertEquals("Ocean Drive", result.street());
+        assertEquals("Miami", result.city());
+
+        verify(currentUserService).getAuthenticatedUser();
+        verify(addressRepository).findByIdAndUserId(addressId, user.getId());
+        verify(addressMapper).update(request, address);
+        verify(addressRepository).save(address);
+        verify(addressMapper).toDTO(address);
+    }
+
+    @Test
+    void updateAuthenticatedUserAddress_shouldThrowException_whenAddressDoesNotExist() {
+
+        Long addressId = 99L;
+
+        AddressUpdateRequestDTO request =
+                new AddressUpdateRequestDTO(
+                        "Ocean Drive",
+                        "1500",
+                        "South Beach",
+                        "Miami",
+                        "FL",
+                        "33139-000"
+                );
+
+        when(currentUserService.getAuthenticatedUser())
+                .thenReturn(user);
+
+        when(addressRepository.findByIdAndUserId(addressId, user.getId()))
+                .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> addressServiceImpl.updateAuthenticatedUserAddress(
+                        addressId,
+                        request));
+
+        verify(currentUserService).getAuthenticatedUser();
+        verify(addressRepository).findByIdAndUserId(addressId, user.getId());
+        verify(addressMapper, never()).update(any(), any());
+        verify(addressRepository, never()).save(any());
     }
 }

@@ -272,15 +272,10 @@ class UserServiceTest {
         when(currentUserService.getAuthenticatedUser())
                 .thenReturn(user);
 
-
         userServiceImpl.deleteAuthenticatedUser();
 
-
-        verify(currentUserService)
-                .getAuthenticatedUser();
-
-        verify(userRepository)
-                .delete(user);
+        verify(currentUserService).getAuthenticatedUser();
+        verify(userRepository).delete(user);
     }
 }
 
