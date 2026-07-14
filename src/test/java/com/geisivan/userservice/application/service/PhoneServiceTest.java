@@ -1,0 +1,106 @@
+package com.geisivan.userservice.application.service;
+
+import com.geisivan.userservice.application.dto.request.PhoneRequestDTO;
+import com.geisivan.userservice.application.dto.response.PhoneResponseDTO;
+import com.geisivan.userservice.application.mapper.PhoneMapper;
+import com.geisivan.userservice.application.service.impl.PhoneServiceImpl;
+import com.geisivan.userservice.domain.entity.Phone;
+import com.geisivan.userservice.domain.entity.User;
+import com.geisivan.userservice.domain.enums.PhoneType;
+import com.geisivan.userservice.domain.enums.UserStatus;
+import com.geisivan.userservice.infrastructure.repository.PhoneRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import java.util.ArrayList;
+import java.util.Set;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class PhoneServiceTest {
+
+    @Mock
+    private CurrentUserService currentUserService;
+
+    @Mock
+    private PhoneRepository phoneRepository;
+
+    @Mock
+    private PhoneMapper phoneMapper;
+
+    @InjectMocks
+    private PhoneServiceImpl phoneServiceImpl;
+
+    private User user;
+
+    private Phone phone;
+
+    @BeforeEach
+    void setUp() {
+
+        user = new User();
+
+        user.setId(1L);
+        user.setName("User Test");
+        user.setEmail("teste@gmail.com");
+        user.setStatus(UserStatus.ACTIVE);
+        user.setRoles(Set.of());
+        user.setAddresses(new ArrayList<>());
+        user.setPhones(new ArrayList<>());
+
+        phone = new Phone();
+
+        phone.setId(1L);
+        phone.setPhoneNumber("123456789");
+        phone.setUser(user);
+    }
+
+    @Test
+    void createAuthenticatedUserPhone_shouldCreateAddress_whenUserIsAuthenticated() {
+
+        PhoneRequestDTO request = new PhoneRequestDTO(
+                "71",
+                "999999999",
+                PhoneType.MOBILE
+        );
+
+        PhoneResponseDTO response = new PhoneResponseDTO(
+                1L,
+                "71",
+                "999999999",
+                PhoneType.MOBILE
+        );
+
+        when(currentUserService.getAuthenticatedUser())
+                .thenReturn(user);
+
+        when(phoneMapper.toEntity(request))
+                .thenReturn(phone);
+
+        when(phoneRepository.save(phone))
+                .thenReturn(phone);
+
+        when(phoneMapper.toDTO(phone))
+                .thenReturn(response);
+
+        var result =
+                phoneServiceImpl.createAuthenticatedUserPhone(request);
+
+        assertNotNull(result);
+        assertEquals("71", result.areaCode());
+        assertEquals("999999999", result.phoneNumber());
+        assertEquals(PhoneType.MOBILE, result.phoneType());
+        assertEquals(user, phone.getUser());
+
+        verify(currentUserService).getAuthenticatedUser();
+        verify(phoneMapper).toEntity(request);
+        verify(phoneRepository).save(phone);
+        verify(phoneMapper).toDTO(phone);
+    }
+}
