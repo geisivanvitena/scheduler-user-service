@@ -10,6 +10,8 @@ import com.geisivan.userservice.domain.entity.User;
 import com.geisivan.userservice.infrastructure.repository.PhoneRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +21,7 @@ public class PhoneServiceImpl implements PhoneService {
     private final PhoneRepository phoneRepository;
     private final PhoneMapper phoneMapper;
 
+    @Transactional
     @Override
     public PhoneResponseDTO createAuthenticatedUserPhone(PhoneRequestDTO dto) {
 
@@ -29,4 +32,18 @@ public class PhoneServiceImpl implements PhoneService {
 
         return phoneMapper.toDTO(phoneRepository.save(phone));
     }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<PhoneResponseDTO> findAuthenticatedUserPhones() {
+
+        User user = currentUserService.getAuthenticatedUser();
+
+        return user.getPhones()
+                .stream()
+                .map(phoneMapper::toDTO)
+                .toList();
+    }
+
+
 }
