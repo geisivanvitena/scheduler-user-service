@@ -103,4 +103,55 @@ class PhoneServiceTest {
         verify(phoneRepository).save(phone);
         verify(phoneMapper).toDTO(phone);
     }
+
+    @Test
+    void findAuthenticatedUserPhones_shouldReturnAllPhones_whenUserHasPhones() {
+
+        Phone secondPhone = new Phone();
+
+        secondPhone.setId(2L);
+        secondPhone.setAreaCode("41");
+        secondPhone.setPhoneNumber("992378825");
+        secondPhone.setPhoneType(PhoneType.WORK);
+
+        user.getPhones().add(phone);
+        user.getPhones().add(secondPhone);
+
+        PhoneResponseDTO firstResponse =
+                new PhoneResponseDTO(
+                        1L,
+                        "71",
+                        "999887766",
+                        PhoneType.MOBILE
+                );
+
+        PhoneResponseDTO secondResponse =
+                new PhoneResponseDTO(
+                        2L,
+                        "41",
+                        "992378825",
+                        PhoneType.WORK
+                );
+
+        when(currentUserService.getAuthenticatedUser())
+                .thenReturn(user);
+
+        when(phoneMapper.toDTO(phone))
+                .thenReturn(firstResponse);
+
+        when(phoneMapper.toDTO(secondPhone))
+                .thenReturn(secondResponse);
+
+        var result =
+                phoneServiceImpl.findAuthenticatedUserPhones();
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals("71", result.get(0).areaCode());
+        assertEquals("41", result.get(1).areaCode());
+
+        verify(currentUserService).getAuthenticatedUser();
+        verify(phoneMapper).toDTO(phone);
+        verify(phoneMapper).toDTO(secondPhone);
+    }
 }

@@ -77,10 +77,17 @@ class AuthControllerTest {
         mockMvc.perform(post(BASE_URL + "/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(VALID_REQUEST))
+
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.email").value(EMAIL))
-                .andExpect(jsonPath("$.name").value("User test"))
-                .andExpect(jsonPath("$.status").value("ACTIVE"));
+
+                .andExpect(jsonPath("$.email")
+                        .value(EMAIL))
+
+                .andExpect(jsonPath("$.name")
+                        .value("User test"))
+
+                .andExpect(jsonPath("$.status")
+                        .value("ACTIVE"));
 
         verify(authService, times(1))
                 .register(any(UserRequestDTO.class));
@@ -95,7 +102,9 @@ class AuthControllerTest {
         mockMvc.perform(post(BASE_URL + "/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(VALID_REQUEST))
+
                 .andExpect(status().isConflict())
+
                 .andExpect(jsonPath("$.message")
                         .value("Email already exists"));
 
@@ -127,10 +136,13 @@ class AuthControllerTest {
                                 """))
 
                 .andExpect(status().isOk())
+
                 .andExpect(jsonPath("$.token")
                         .value("token"))
+
                 .andExpect(jsonPath("$.userId")
                         .value(1))
+
                 .andExpect(jsonPath("$.email")
                         .value(EMAIL));
 
