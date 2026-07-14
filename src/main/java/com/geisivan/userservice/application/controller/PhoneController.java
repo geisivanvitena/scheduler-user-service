@@ -1,6 +1,7 @@
 package com.geisivan.userservice.application.controller;
 
 import com.geisivan.userservice.application.dto.request.PhoneRequestDTO;
+import com.geisivan.userservice.application.dto.request.PhoneUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.response.PhoneResponseDTO;
 import com.geisivan.userservice.application.service.PhoneService;
 import jakarta.validation.Valid;
@@ -31,5 +32,14 @@ public class PhoneController {
 
         return ResponseEntity.ok(
                 phoneService.findAuthenticatedUserPhones());
+    }
+
+    @PutMapping("/{phoneId}")
+    public ResponseEntity<PhoneResponseDTO> updateAuthenticatedUserPhone(
+            @PathVariable Long phoneId,
+            @Valid @RequestBody PhoneUpdateRequestDTO dto) {
+
+        return ResponseEntity.ok(
+                phoneService.updateAuthenticatedUserPhone(phoneId, dto));
     }
 }
