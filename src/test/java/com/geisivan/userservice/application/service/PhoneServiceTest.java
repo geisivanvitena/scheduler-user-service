@@ -233,4 +233,41 @@ class PhoneServiceTest {
         verify(phoneMapper, never()).update(any(), any());
         verify(phoneRepository, never()).save(any());
     }
+
+    @Test
+    void deleteAuthenticatedUserPhone_shouldDeletePhone_whenPhoneExists() {
+
+        Long phoneId = 1L;
+
+        when(currentUserService.getAuthenticatedUser())
+                .thenReturn(user);
+
+        when(phoneRepository.findByIdAndUserId( phoneId, user.getId()))
+                .thenReturn(Optional.of(phone));
+
+        phoneServiceImpl.deleteAuthenticatedUserPhone(phoneId);
+
+        verify(currentUserService).getAuthenticatedUser();
+        verify(phoneRepository).findByIdAndUserId(phoneId, user.getId());
+        verify(phoneRepository).delete(phone);
+    }
+
+    @Test
+    void deleteAuthenticatedUserPhone_shouldThrowException_whenPhoneDoesNotExist() {
+
+        Long phoneId = 99L;
+
+        when(currentUserService.getAuthenticatedUser())
+                .thenReturn(user);
+
+        when(phoneRepository.findByIdAndUserId( phoneId, user.getId()))
+                .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> phoneServiceImpl.deleteAuthenticatedUserPhone(phoneId));
+
+        verify(currentUserService).getAuthenticatedUser();
+        verify(phoneRepository).findByIdAndUserId(phoneId, user.getId());
+        verify(phoneRepository, never()).delete(any());
+    }
 }

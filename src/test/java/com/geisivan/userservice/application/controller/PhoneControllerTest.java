@@ -5,6 +5,7 @@ import com.geisivan.userservice.application.dto.request.PhoneUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.response.PhoneResponseDTO;
 import com.geisivan.userservice.application.service.PhoneService;
 import com.geisivan.userservice.domain.enums.PhoneType;
+import com.geisivan.userservice.infrastructure.exception.custom.ResourceNotFoundException;
 import com.geisivan.userservice.infrastructure.security.jwt.JwtUtil;
 import com.geisivan.userservice.infrastructure.security.service.UserDetailsServiceImpl;
 import org.junit.jupiter.api.Test;
@@ -19,10 +20,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = PhoneController.class)
@@ -228,5 +231,33 @@ class PhoneControllerTest {
                 .andExpect(status().isBadRequest());
 
         verifyNoInteractions(phoneService);
+    }
+
+    @Test
+    void deleteAuthenticatedUserPhone_shouldReturn204_whenPhoneIsDeleted()
+            throws Exception {
+
+        mockMvc.perform(delete(BASE_URL + "/1"))
+                .andExpect(status().isNoContent());
+
+        verify(phoneService).deleteAuthenticatedUserPhone(1L);
+    }
+
+    @Test
+    void deleteAuthenticatedUserPhone_shouldReturn404_whenPhoneDoesNotExist()
+            throws Exception {
+
+        doThrow(new ResourceNotFoundException(
+                "Phone not found for the authenticated user."))
+
+                .when(phoneService).deleteAuthenticatedUserPhone(99L);
+
+        mockMvc.perform(delete(BASE_URL + "/99"))
+                .andExpect(status().isNotFound())
+
+                .andExpect(jsonPath("$.message")
+                        .value("Phone not found for the authenticated user."));
+
+        verify(phoneService).deleteAuthenticatedUserPhone(99L);
     }
 }
