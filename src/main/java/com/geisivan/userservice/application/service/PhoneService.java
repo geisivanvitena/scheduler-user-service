@@ -12,4 +12,6 @@ public interface PhoneService {
     List<PhoneResponseDTO> findAuthenticatedUserPhones();
 
     PhoneResponseDTO updateAuthenticatedUserPhone(Long phoneId, PhoneUpdateRequestDTO dto);
+
+    void deleteAuthenticatedUserPhone(Long phoneId);
 }

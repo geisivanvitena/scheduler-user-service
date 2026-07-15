@@ -60,6 +60,18 @@ public class PhoneServiceImpl implements PhoneService {
         return phoneMapper.toDTO(phoneRepository.save(phone));
     }
 
+    @Transactional
+    @Override
+    public void deleteAuthenticatedUserPhone(Long phoneId) {
+
+        User user = currentUserService.getAuthenticatedUser();
+
+        Phone phone = getPhoneByIdAndUserId(phoneId, user.getId());
+
+        phoneRepository.delete(phone);
+    }
+
+
     private Phone getPhoneByIdAndUserId(Long phoneId, Long userId) {
 
         return phoneRepository.findByIdAndUserId(phoneId, userId)
