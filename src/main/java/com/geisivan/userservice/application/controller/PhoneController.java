@@ -42,4 +42,13 @@ public class PhoneController {
         return ResponseEntity.ok(
                 phoneService.updateAuthenticatedUserPhone(phoneId, dto));
     }
+
+    @DeleteMapping("/{phoneId}")
+    public ResponseEntity<Void> deleteAuthenticatedUserPhone(
+            @PathVariable Long phoneId) {
+
+        phoneService.deleteAuthenticatedUserPhone(phoneId);
+
+        return ResponseEntity.noContent().build();
+    }
 }
