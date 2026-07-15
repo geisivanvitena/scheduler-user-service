@@ -1,6 +1,7 @@
 package com.geisivan.userservice.application.service;
 
 import com.geisivan.userservice.application.dto.request.PhoneRequestDTO;
+import com.geisivan.userservice.application.dto.request.PhoneUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.response.PhoneResponseDTO;
 import com.geisivan.userservice.application.mapper.PhoneMapper;
 import com.geisivan.userservice.application.service.impl.PhoneServiceImpl;
@@ -8,6 +9,7 @@ import com.geisivan.userservice.domain.entity.Phone;
 import com.geisivan.userservice.domain.entity.User;
 import com.geisivan.userservice.domain.enums.PhoneType;
 import com.geisivan.userservice.domain.enums.UserStatus;
+import com.geisivan.userservice.infrastructure.exception.custom.ResourceNotFoundException;
 import com.geisivan.userservice.infrastructure.repository.PhoneRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,11 +18,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
 class PhoneServiceTest {
@@ -153,5 +159,78 @@ class PhoneServiceTest {
         verify(currentUserService).getAuthenticatedUser();
         verify(phoneMapper).toDTO(phone);
         verify(phoneMapper).toDTO(secondPhone);
+    }
+
+    @Test
+    void updateAuthenticatedUserPhone_shouldUpdatePhone_whenPhoneExists() {
+
+        Long phoneId = 1L;
+
+        PhoneUpdateRequestDTO request =
+                new PhoneUpdateRequestDTO(
+                        "71",
+                        "999999999",
+                        PhoneType.OTHER
+                );
+
+        PhoneResponseDTO response =
+                new PhoneResponseDTO(
+                        1L,
+                        "71",
+                        "999999999",
+                        PhoneType.OTHER
+                );
+
+        when(currentUserService.getAuthenticatedUser())
+                .thenReturn(user);
+
+        when(phoneRepository.findByIdAndUserId(phoneId, user.getId()))
+                .thenReturn(Optional.of(phone));
+
+        when(phoneRepository.save(phone)).thenReturn(phone);
+
+        when(phoneMapper.toDTO(phone)).thenReturn(response);
+
+        var result = phoneServiceImpl.updateAuthenticatedUserPhone(
+                phoneId, request);
+
+        assertNotNull(result);
+        assertEquals("71", result.areaCode());
+        assertEquals("999999999", result.phoneNumber());
+        assertEquals(PhoneType.OTHER, result.phoneType());
+
+        verify(currentUserService).getAuthenticatedUser();
+        verify(phoneRepository).findByIdAndUserId(phoneId, user.getId());
+        verify(phoneMapper).update(request, phone);
+        verify(phoneRepository).save(phone);
+        verify(phoneMapper).toDTO(phone);
+    }
+
+    @Test
+    void updateAuthenticatedUserPhone_shouldThrowException_whenPhoneDoesNotExist() {
+
+        Long phoneId = 99L;
+
+        PhoneUpdateRequestDTO request =
+                new PhoneUpdateRequestDTO(
+                        "71",
+                        "999999999",
+                        PhoneType.OTHER
+                );
+
+        when(currentUserService.getAuthenticatedUser())
+                .thenReturn(user);
+
+        when(phoneRepository.findByIdAndUserId(phoneId, user.getId()))
+                .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> phoneServiceImpl.updateAuthenticatedUserPhone(
+                        phoneId, request));
+
+        verify(currentUserService).getAuthenticatedUser();
+        verify(phoneRepository).findByIdAndUserId(phoneId, user.getId());
+        verify(phoneMapper, never()).update(any(), any());
+        verify(phoneRepository, never()).save(any());
     }
 }

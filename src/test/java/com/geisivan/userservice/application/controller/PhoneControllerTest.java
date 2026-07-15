@@ -1,6 +1,7 @@
 package com.geisivan.userservice.application.controller;
 
 import com.geisivan.userservice.application.dto.request.PhoneRequestDTO;
+import com.geisivan.userservice.application.dto.request.PhoneUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.response.PhoneResponseDTO;
 import com.geisivan.userservice.application.service.PhoneService;
 import com.geisivan.userservice.domain.enums.PhoneType;
@@ -20,6 +21,8 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = PhoneController.class)
@@ -56,6 +59,22 @@ class PhoneControllerTest {
             "phoneType": null
         }
         """;
+
+    private static final String VALID_UPDATE_PHONE_REQUEST = """
+    {
+        "areaCode": "71",
+        "phoneNumber": "999999999",
+        "phoneType": "OTHER"
+    }
+    """;
+
+    private static final String INVALID_UPDATE_PHONE_REQUEST = """
+    {
+        "areaCode": "7",
+        "phoneNumber": "123",
+        "phoneType": "OTHER"
+    }
+    """;
 
     @Test
     void createAuthenticatedUserPhone_shouldReturn201_whenRequestIsValid()
@@ -157,5 +176,57 @@ class PhoneControllerTest {
                         .value("992378825"));
 
         verify(phoneService).findAuthenticatedUserPhones();
+    }
+
+    @Test
+    void updateAuthenticatedUserPhone_shouldReturn200_whenRequestIsValid()
+            throws Exception {
+
+        PhoneResponseDTO response =
+                new PhoneResponseDTO(
+                        1L,
+                        "71",
+                        "999999999",
+                        PhoneType.OTHER
+                );
+
+        when(phoneService.updateAuthenticatedUserPhone( eq(1L),
+                any(PhoneUpdateRequestDTO.class)))
+                .thenReturn(response);
+
+        mockMvc.perform(
+                put(BASE_URL + "/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(VALID_UPDATE_PHONE_REQUEST))
+
+                .andExpect(status().isOk())
+
+                .andExpect(jsonPath("$.id")
+                        .value(1))
+
+                .andExpect(jsonPath("$.areaCode")
+                        .value("71"))
+
+                .andExpect(jsonPath("$.phoneNumber")
+                        .value("999999999"))
+
+                .andExpect(jsonPath("$.phoneType")
+                        .value("OTHER"));
+
+        verify(phoneService).updateAuthenticatedUserPhone( eq(1L),
+                any(PhoneUpdateRequestDTO.class));
+    }
+
+    @Test
+    void updateAuthenticatedUserPhone_shouldReturn400_whenRequestIsInvalid()
+            throws Exception {
+
+        mockMvc.perform( put(BASE_URL + "/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(INVALID_UPDATE_PHONE_REQUEST) )
+
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(phoneService);
     }
 }
