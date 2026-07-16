@@ -49,6 +49,16 @@ public class AdminUserServiceImpl implements AdminUserService {
         return userRepository.findAll(pageable).map(userMapper::toDTO);
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public UserResponseDTO findUserById(Long userId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User with id " + userId + " not found"));
+
+        return userMapper.toDTO(user);
+    }
 
     private User buildAdminUser(AdminUserRequestDTO dto){
 
