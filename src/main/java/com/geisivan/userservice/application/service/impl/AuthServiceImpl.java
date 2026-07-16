@@ -43,9 +43,7 @@ public class AuthServiceImpl implements AuthService {
 
         User user = buildUser(dto);
 
-        user = userRepository.save(user);
-
-        return userMapper.toDTO(user);
+        return userMapper.toDTO(userRepository.save(user));
     }
 
     @Override
@@ -99,7 +97,8 @@ public class AuthServiceImpl implements AuthService {
     private void validateEmailExists(String email) {
 
         if (userRepository.existsByEmail(email)) {
-            throw new ConflictException("Email already exists: " + email);
+            throw new ConflictException(
+                    "Email " + email + "already exists");
         }
     }
 }
