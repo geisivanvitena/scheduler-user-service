@@ -10,4 +10,6 @@ public interface AdminUserService {
     UserResponseDTO createUser(AdminUserRequestDTO dto);
 
     Page<UserResponseDTO> findAllUsers(Pageable pageable);
+
+    UserResponseDTO findUserById(Long userId);
 }

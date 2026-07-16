@@ -40,4 +40,11 @@ public class AdminUserController {
 
         return ResponseEntity.ok(adminUserService.findAllUsers(pageable));
     }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserResponseDTO> findUserById(
+            @PathVariable Long userId) {
+
+        return ResponseEntity.ok(adminUserService.findUserById(userId));
+    }
 }
