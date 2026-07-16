@@ -13,6 +13,8 @@ import com.geisivan.userservice.infrastructure.exception.custom.ResourceNotFound
 import com.geisivan.userservice.infrastructure.repository.RoleRepository;
 import com.geisivan.userservice.infrastructure.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +41,14 @@ public class AdminUserServiceImpl implements AdminUserService {
 
         return userMapper.toDTO(userRepository.save(user));
     }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<UserResponseDTO> findAllUsers(Pageable pageable) {
+
+        return userRepository.findAll(pageable).map(userMapper::toDTO);
+    }
+
 
     private User buildAdminUser(AdminUserRequestDTO dto){
 
