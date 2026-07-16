@@ -22,6 +22,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 @WebMvcTest(controllers = AdminUserController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -129,5 +133,73 @@ class AdminControllerTest {
 
         verify(adminUserService)
                 .createUser(any(AdminUserRequestDTO.class));
+    }
+
+    @Test
+    void findAllUsers_shouldReturn200_whenUsersExist()
+            throws Exception {
+
+        UserResponseDTO response =
+                new UserResponseDTO(
+                        1L,
+                        "Admin Test",
+                        EMAIL,
+                        UserStatus.ACTIVE,
+                        Set.of(),
+                        List.of(),
+                        List.of(),
+                        Instant.now(),
+                        null
+                );
+
+        Page<UserResponseDTO> page =
+                new PageImpl<>(
+                        List.of(response),
+                        PageRequest.of(0, 10),
+                        1
+                );
+
+        when(adminUserService.findAllUsers(any()))
+                .thenReturn(page);
+
+        mockMvc.perform(get(BASE_URL))
+
+                .andExpect(status().isOk())
+
+                .andExpect(jsonPath("$.content[0].email")
+                        .value(EMAIL))
+
+                .andExpect(jsonPath("$.content[0].name")
+                        .value("Admin Test"))
+
+                .andExpect(jsonPath("$.totalElements")
+                        .value(1));
+
+        verify(adminUserService).findAllUsers(any());
+    }
+
+    @Test
+    void findAllUsers_shouldReturnEmptyPage_whenUsersDoNotExist()
+            throws Exception {
+
+        Page<UserResponseDTO> page =
+                new PageImpl<>(
+                        List.of(),
+                        PageRequest.of(0, 10),
+                        0
+                );
+
+        when(adminUserService.findAllUsers(any()))
+                .thenReturn(page);
+
+        mockMvc.perform(get(BASE_URL))
+
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content").isEmpty())
+                .andExpect(jsonPath("$.totalElements")
+                        .value(0));
+
+        verify(adminUserService).findAllUsers(any());
     }
 }

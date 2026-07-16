@@ -25,7 +25,10 @@ import java.time.Instant;
 import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 @ExtendWith(MockitoExtension.class)
 class AdminUserServiceTest {
 
@@ -198,5 +201,60 @@ class AdminUserServiceTest {
         verify(passwordEncoder).encode(PASSWORD);
         verify(roleRepository).findByName(RoleName.ROLE_ADMIN);
         verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void findAllUsers_shouldReturnPageOfUsers() {
+
+        Pageable pageable = PageRequest.of(0, 10);
+
+        UserResponseDTO response =
+                new UserResponseDTO(
+                        1L,
+                        "Admin Test",
+                        EMAIL,
+                        UserStatus.ACTIVE,
+                        Set.of(),
+                        List.of(),
+                        List.of(),
+                        Instant.now(),
+                        null
+                );
+
+        Page<User> userPage = new PageImpl<>(List.of(user));
+
+        when(userRepository.findAll(pageable))
+                .thenReturn(userPage);
+
+        when(userMapper.toDTO(user))
+                .thenReturn(response);
+
+        Page<UserResponseDTO> result =
+                adminUserServiceImpl.findAllUsers(pageable);
+
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
+        assertEquals(EMAIL, result.getContent().get(0).email());
+
+        verify(userRepository).findAll(pageable);
+        verify(userMapper).toDTO(user);
+    }
+
+    @Test
+    void findAllUsers_shouldReturnEmptyPage_whenUsersDoNotExist() {
+
+        Pageable pageable = PageRequest.of(0, 10);
+
+        when(userRepository.findAll(pageable))
+                .thenReturn(Page.empty());
+
+        Page<UserResponseDTO> result =
+                adminUserServiceImpl.findAllUsers(pageable);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        verify(userRepository).findAll(pageable);
+        verifyNoInteractions(userMapper);
     }
 }
