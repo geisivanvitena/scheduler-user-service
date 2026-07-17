@@ -257,4 +257,54 @@ class AdminUserServiceTest {
         verify(userRepository).findAll(pageable);
         verifyNoInteractions(userMapper);
     }
+
+    @Test
+    void findUserById_shouldReturnUser_whenUserExists() {
+
+        Long userId = 1L;
+
+        UserResponseDTO response =
+                new UserResponseDTO(
+                        1L,
+                        "Admin Test",
+                        EMAIL,
+                        UserStatus.ACTIVE,
+                        Set.of(),
+                        List.of(),
+                        List.of(),
+                        Instant.now(),
+                        null
+                );
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        when(userMapper.toDTO(user))
+                .thenReturn(response);
+
+        UserResponseDTO result =
+                adminUserServiceImpl.findUserById(userId);
+
+        assertNotNull(result);
+        assertEquals(userId, result.id());
+        assertEquals(EMAIL, result.email());
+
+        verify(userRepository).findById(userId);
+        verify(userMapper).toDTO(user);
+    }
+
+    @Test
+    void findUserById_shouldThrowResourceNotFoundException_whenUserDoesNotExist() {
+
+        Long userId = 99L;
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> adminUserServiceImpl.findUserById(userId));
+
+        verify(userRepository).findById(userId);
+        verifyNoInteractions(userMapper);
+    }
 }
