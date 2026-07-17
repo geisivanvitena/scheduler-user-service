@@ -202,4 +202,66 @@ class AdminControllerTest {
 
         verify(adminUserService).findAllUsers(any());
     }
+
+    @Test
+    void findUserById_shouldReturn200_whenUserExists()
+            throws Exception {
+
+        Long userId = 1L;
+
+        UserResponseDTO response =
+                new UserResponseDTO(
+                        userId,
+                        "Admin Test",
+                        EMAIL,
+                        UserStatus.ACTIVE,
+                        Set.of(),
+                        List.of(),
+                        List.of(),
+                        Instant.now(),
+                        null
+                );
+
+        when(adminUserService.findUserById(userId))
+                .thenReturn(response);
+
+        mockMvc.perform(get(BASE_URL + "/" + userId))
+
+                .andExpect(status().isOk())
+
+                .andExpect(jsonPath("$.id")
+                        .value(userId))
+
+                .andExpect(jsonPath("$.email")
+                        .value(EMAIL))
+
+                .andExpect(jsonPath("$.name")
+                        .value("Admin Test"))
+
+                .andExpect(jsonPath("$.status")
+                        .value("ACTIVE"));
+
+        verify(adminUserService).findUserById(userId);
+    }
+
+    @Test
+    void findUserById_shouldReturn404_whenUserDoesNotExist()
+            throws Exception {
+
+        Long userId = 99L;
+
+        when(adminUserService.findUserById(userId))
+                .thenThrow(new ResourceNotFoundException(
+                        "User with id " + userId + " not found"));
+
+        mockMvc.perform(get(BASE_URL + "/" + userId))
+
+                .andExpect(status().isNotFound())
+
+                .andExpect(jsonPath("$.message")
+                        .value("User with id 99 not found"));
+
+        verify(adminUserService)
+                .findUserById(userId);
+    }
 }
