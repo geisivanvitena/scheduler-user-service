@@ -1,6 +1,7 @@
 package com.geisivan.userservice.application.service.impl;
 
 import com.geisivan.userservice.application.dto.request.AdminUserRequestDTO;
+import com.geisivan.userservice.application.dto.response.PageResponseDTO;
 import com.geisivan.userservice.application.dto.response.UserResponseDTO;
 import com.geisivan.userservice.application.mapper.AdminUserMapper;
 import com.geisivan.userservice.application.mapper.UserMapper;
@@ -8,6 +9,7 @@ import com.geisivan.userservice.application.service.AdminUserService;
 import com.geisivan.userservice.domain.entity.Role;
 import com.geisivan.userservice.domain.entity.User;
 import com.geisivan.userservice.domain.enums.RoleName;
+import com.geisivan.userservice.domain.enums.UserStatus;
 import com.geisivan.userservice.infrastructure.exception.custom.ConflictException;
 import com.geisivan.userservice.infrastructure.exception.custom.ResourceNotFoundException;
 import com.geisivan.userservice.infrastructure.repository.RoleRepository;
@@ -31,6 +33,8 @@ public class AdminUserServiceImpl implements AdminUserService {
     private final UserRepository  userRepository;
     private final RoleRepository roleRepository;
 
+    private static final String NOT_FOUND = " not found";
+
     @Transactional
     @Override
     public UserResponseDTO createUser(AdminUserRequestDTO dto) {
@@ -44,9 +48,20 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<UserResponseDTO> findAllUsers(Pageable pageable) {
+    public PageResponseDTO<UserResponseDTO> findAllUsers(
+            UserStatus status, RoleName role, Pageable pageable) {
 
-        return userRepository.findAll(pageable).map(userMapper::toDTO);
+        Page<UserResponseDTO> usersPage = userRepository
+                .findAllWithFilters(status, role, pageable)
+                .map(userMapper::toDTO);
+
+        return new PageResponseDTO<>(
+                usersPage.getContent(),
+                usersPage.getNumber(),
+                usersPage.getSize(),
+                usersPage.getTotalElements(),
+                usersPage.getTotalPages()
+        );
     }
 
     @Transactional(readOnly = true)
@@ -55,7 +70,18 @@ public class AdminUserServiceImpl implements AdminUserService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "User with id " + userId + " not found"));
+                        "User with id " + userId + NOT_FOUND));
+
+        return userMapper.toDTO(user);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public UserResponseDTO findUserByEmail(String email) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User with email " + email + NOT_FOUND));
 
         return userMapper.toDTO(user);
     }
@@ -88,6 +114,6 @@ public class AdminUserServiceImpl implements AdminUserService {
 
         return roleRepository.findByName(roleName)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Role " + roleName + " not found"));
+                        "Role " + roleName + NOT_FOUND));
     }
 }
