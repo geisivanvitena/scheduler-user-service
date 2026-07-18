@@ -1,14 +1,14 @@
 package com.geisivan.userservice.application.controller;
 
 import com.geisivan.userservice.application.dto.request.AdminUserRequestDTO;
+import com.geisivan.userservice.application.dto.response.PageResponseDTO;
 import com.geisivan.userservice.application.dto.response.UserResponseDTO;
 import com.geisivan.userservice.application.service.AdminUserService;
+import com.geisivan.userservice.domain.enums.RoleName;
+import com.geisivan.userservice.domain.enums.UserStatus;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,15 +30,13 @@ public class AdminUserController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<UserResponseDTO>> findAllUsers(
-            @PageableDefault(
-                    size = 10,
-                    sort = "createdAt",
-                    direction = Sort.Direction.DESC
+    public ResponseEntity<PageResponseDTO<UserResponseDTO>> findAllUsers(
+            @RequestParam(required = false) UserStatus  status,
+            @RequestParam(required = false) RoleName role,
+            Pageable pageable){
 
-            ) Pageable pageable) {
-
-        return ResponseEntity.ok(adminUserService.findAllUsers(pageable));
+        return ResponseEntity.ok(
+                adminUserService.findAllUsers(status, role, pageable));
     }
 
     @GetMapping("/{userId}")
@@ -46,5 +44,12 @@ public class AdminUserController {
             @PathVariable Long userId) {
 
         return ResponseEntity.ok(adminUserService.findUserById(userId));
+    }
+
+    @GetMapping("/email")
+    public ResponseEntity<UserResponseDTO> findUserByEmail(
+            @RequestParam String email) {
+
+        return ResponseEntity.ok(adminUserService.findUserByEmail(email));
     }
 }

@@ -1,6 +1,7 @@
 package com.geisivan.userservice.application.controller;
 
 import com.geisivan.userservice.application.dto.request.AdminUserRequestDTO;
+import com.geisivan.userservice.application.dto.response.PageResponseDTO;
 import com.geisivan.userservice.application.dto.response.UserResponseDTO;
 import com.geisivan.userservice.application.service.AdminUserService;
 import com.geisivan.userservice.domain.enums.UserStatus;
@@ -22,9 +23,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 @WebMvcTest(controllers = AdminUserController.class)
@@ -152,15 +150,17 @@ class AdminControllerTest {
                         null
                 );
 
-        Page<UserResponseDTO> page =
-                new PageImpl<>(
+        PageResponseDTO<UserResponseDTO> pageResponse =
+                new PageResponseDTO<>(
                         List.of(response),
-                        PageRequest.of(0, 10),
+                        0,
+                        10,
+                        1,
                         1
                 );
 
-        when(adminUserService.findAllUsers(any()))
-                .thenReturn(page);
+        when(adminUserService.findAllUsers(any(), any(), any()))
+                .thenReturn(pageResponse);
 
         mockMvc.perform(get(BASE_URL))
 
@@ -173,23 +173,32 @@ class AdminControllerTest {
                         .value("Admin Test"))
 
                 .andExpect(jsonPath("$.totalElements")
-                        .value(1));
+                        .value(1))
 
-        verify(adminUserService).findAllUsers(any());
+                .andExpect(jsonPath("$.totalPages")
+                        .value(1)
+        );
+
+
+
+
+        verify(adminUserService).findAllUsers(any(), any(), any());
     }
 
     @Test
     void findAllUsers_shouldReturnEmptyPage_whenUsersDoNotExist()
             throws Exception {
 
-        Page<UserResponseDTO> page =
-                new PageImpl<>(
+       PageResponseDTO<UserResponseDTO> page =
+                new PageResponseDTO<>(
                         List.of(),
-                        PageRequest.of(0, 10),
+                        0,
+                        10,
+                        0,
                         0
                 );
 
-        when(adminUserService.findAllUsers(any()))
+        when(adminUserService.findAllUsers(any(), any(), any()))
                 .thenReturn(page);
 
         mockMvc.perform(get(BASE_URL))
@@ -200,7 +209,7 @@ class AdminControllerTest {
                 .andExpect(jsonPath("$.totalElements")
                         .value(0));
 
-        verify(adminUserService).findAllUsers(any());
+        verify(adminUserService).findAllUsers(any(), any(), any());
     }
 
     @Test

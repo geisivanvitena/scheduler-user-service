@@ -1,6 +1,7 @@
 package com.geisivan.userservice.application.service;
 
 import com.geisivan.userservice.application.dto.request.AdminUserRequestDTO;
+import com.geisivan.userservice.application.dto.response.PageResponseDTO;
 import com.geisivan.userservice.application.dto.response.RoleResponseDTO;
 import com.geisivan.userservice.application.dto.response.UserResponseDTO;
 import com.geisivan.userservice.application.mapper.AdminUserMapper;
@@ -223,20 +224,21 @@ class AdminUserServiceTest {
 
         Page<User> userPage = new PageImpl<>(List.of(user));
 
-        when(userRepository.findAll(pageable))
+        when(userRepository.findAllWithFilters(
+                isNull(), isNull(), eq(pageable)))
                 .thenReturn(userPage);
 
         when(userMapper.toDTO(user))
                 .thenReturn(response);
 
-        Page<UserResponseDTO> result =
-                adminUserServiceImpl.findAllUsers(pageable);
+        PageResponseDTO<UserResponseDTO> result =
+                adminUserServiceImpl.findAllUsers(null, null, pageable);
 
         assertNotNull(result);
-        assertEquals(1, result.getTotalElements());
-        assertEquals(EMAIL, result.getContent().get(0).email());
+        assertEquals(1, result.totalElements());
+        assertEquals(EMAIL, result.content().get(0).email());
 
-        verify(userRepository).findAll(pageable);
+        verify(userRepository).findAllWithFilters(isNull(), isNull(), eq(pageable));
         verify(userMapper).toDTO(user);
     }
 
@@ -245,16 +247,18 @@ class AdminUserServiceTest {
 
         Pageable pageable = PageRequest.of(0, 10);
 
-        when(userRepository.findAll(pageable))
+        when(userRepository.findAllWithFilters(isNull(), isNull(), eq(pageable)))
                 .thenReturn(Page.empty());
 
-        Page<UserResponseDTO> result =
-                adminUserServiceImpl.findAllUsers(pageable);
+        PageResponseDTO<UserResponseDTO> result =
+                adminUserServiceImpl.findAllUsers(null, null, pageable);
 
         assertNotNull(result);
-        assertTrue(result.isEmpty());
+        assertTrue(result.content().isEmpty());
+        assertEquals(0, result.totalElements());
+        assertEquals(1, result.totalPages());
 
-        verify(userRepository).findAll(pageable);
+        verify(userRepository).findAllWithFilters(isNull(), isNull(), eq(pageable));
         verifyNoInteractions(userMapper);
     }
 
