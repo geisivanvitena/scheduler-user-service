@@ -1,6 +1,7 @@
 package com.geisivan.userservice.application.controller;
 
 import com.geisivan.userservice.application.dto.request.AdminUserRequestDTO;
+import com.geisivan.userservice.application.dto.request.UserStatusUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.request.UserUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.response.PageResponseDTO;
 import com.geisivan.userservice.application.dto.response.UserResponseDTO;
@@ -60,5 +61,13 @@ public class AdminUserController {
             @Valid @RequestBody UserUpdateRequestDTO dto) {
 
         return ResponseEntity.ok(adminUserService.updateUser(id, dto));
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<UserResponseDTO> updateUserStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody UserStatusUpdateRequestDTO dto) {
+
+        return ResponseEntity.ok(adminUserService.updateUserStatus(id, dto));
     }
 }
