@@ -1,6 +1,7 @@
 package com.geisivan.userservice.application.service;
 
 import com.geisivan.userservice.application.dto.request.AdminUserRequestDTO;
+import com.geisivan.userservice.application.dto.request.UserStatusUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.request.UserUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.response.PageResponseDTO;
 import com.geisivan.userservice.application.dto.response.UserResponseDTO;
@@ -22,4 +23,6 @@ public interface AdminUserService {
     UserResponseDTO findUserByEmail(String email);
 
     UserResponseDTO updateUser(Long id, UserUpdateRequestDTO dto);
+
+    UserResponseDTO updateUserStatus(Long id, UserStatusUpdateRequestDTO dto);
 }

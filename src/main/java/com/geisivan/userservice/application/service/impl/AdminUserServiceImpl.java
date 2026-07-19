@@ -1,6 +1,7 @@
 package com.geisivan.userservice.application.service.impl;
 
 import com.geisivan.userservice.application.dto.request.AdminUserRequestDTO;
+import com.geisivan.userservice.application.dto.request.UserStatusUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.request.UserUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.response.PageResponseDTO;
 import com.geisivan.userservice.application.dto.response.UserResponseDTO;
@@ -98,6 +99,17 @@ public class AdminUserServiceImpl implements AdminUserService {
 
         // Ensures @LastModifiedDate is updated before mapping the response
         userRepository.flush();
+
+        return userMapper.toDTO(user);
+    }
+
+    @Transactional
+    @Override
+    public UserResponseDTO updateUserStatus(Long id, UserStatusUpdateRequestDTO dto) {
+
+        User user = getUserById(id);
+
+        user.setStatus(dto.status());
 
         return userMapper.toDTO(user);
     }
