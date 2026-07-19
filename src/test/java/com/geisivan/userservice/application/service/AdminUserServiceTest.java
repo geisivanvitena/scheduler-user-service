@@ -1,6 +1,7 @@
 package com.geisivan.userservice.application.service;
 
 import com.geisivan.userservice.application.dto.request.AdminUserRequestDTO;
+import com.geisivan.userservice.application.dto.request.UserStatusUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.request.UserUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.response.PageResponseDTO;
 import com.geisivan.userservice.application.dto.response.RoleResponseDTO;
@@ -603,6 +604,102 @@ class AdminUserServiceTest {
 
         verify(passwordEncoder, never()).encode(anyString());
         verify(userRepository).flush();
+        verify(userMapper).toDTO(user);
+    }
+
+    @Test
+    void updateUserStatus_shouldUpdateStatus_whenStatusIsValid() {
+
+        Long userId = 1L;
+
+        UserStatusUpdateRequestDTO dto =
+                new UserStatusUpdateRequestDTO(
+                        UserStatus.PENDING
+                );
+
+        UserResponseDTO response =
+                new UserResponseDTO(
+                        userId,
+                        "Admin Test",
+                        EMAIL,
+                        UserStatus.PENDING,
+                        Set.of(),
+                        List.of(),
+                        List.of(),
+                        Instant.now(),
+                        Instant.now()
+                );
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        when(userMapper.toDTO(user)).thenReturn(response);
+
+        UserResponseDTO result =
+                adminUserServiceImpl.updateUserStatus(userId, dto);
+
+        assertNotNull(result);
+        assertEquals(UserStatus.PENDING, result.status());
+        assertEquals(UserStatus.PENDING, user.getStatus());
+
+        verify(userRepository).findById(userId);
+        verify(userMapper).toDTO(user);
+    }
+
+    @Test
+    void updateUserStatus_shouldThrowResourceNotFoundException_whenUserDoesNotExist() {
+
+        Long userId = 99L;
+
+        UserStatusUpdateRequestDTO dto = new UserStatusUpdateRequestDTO(
+                UserStatus.BLOCKED);
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> adminUserServiceImpl.updateUserStatus(
+                        userId, dto));
+
+        verify(userRepository).findById(userId);
+        verifyNoInteractions(userMapper);
+    }
+
+    @Test
+    void updateUserStatus_shouldBlockUser_whenStatusIsBlocked() {
+
+        Long userId = 1L;
+
+        UserStatusUpdateRequestDTO dto =
+                new UserStatusUpdateRequestDTO(
+                        UserStatus.BLOCKED
+                );
+
+        UserResponseDTO response =
+                new UserResponseDTO(
+                        userId,
+                        "Admin Test",
+                        EMAIL,
+                        UserStatus.BLOCKED,
+                        Set.of(),
+                        List.of(),
+                        List.of(),
+                        Instant.now(),
+                        Instant.now()
+                );
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        when(userMapper.toDTO(user)).thenReturn(response);
+
+        UserResponseDTO result = adminUserServiceImpl.updateUserStatus(
+                userId, dto);
+
+        assertEquals(UserStatus.BLOCKED, result.status());
+        assertEquals(UserStatus.BLOCKED, user.getStatus());
+
+        verify(userRepository).findById(userId);
         verify(userMapper).toDTO(user);
     }
 }
