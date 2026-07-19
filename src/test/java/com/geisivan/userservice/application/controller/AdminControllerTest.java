@@ -273,4 +273,58 @@ class AdminControllerTest {
         verify(adminUserService)
                 .findUserById(userId);
     }
+
+    @Test
+    void findUserByEmail_shouldReturn200_whenUserExists()
+            throws Exception {
+
+        UserResponseDTO response =
+                new UserResponseDTO(
+                        1L,
+                        "Admin Test",
+                        EMAIL,
+                        UserStatus.ACTIVE,
+                        Set.of(),
+                        List.of(),
+                        List.of(),
+                        Instant.now(),
+                        null
+                );
+
+        when(adminUserService.findUserByEmail(EMAIL))
+                .thenReturn(response);
+
+        mockMvc.perform(get(BASE_URL + "/email")
+                        .param("email", EMAIL))
+
+                .andExpect(status().isOk())
+
+                .andExpect(jsonPath("$.email")
+                        .value(EMAIL))
+
+                .andExpect(jsonPath("$.name")
+                        .value("Admin Test"));
+
+        verify(adminUserService).findUserByEmail(EMAIL);
+    }
+
+    @Test
+    void findUserByEmail_shouldReturn404_whenUserDoesNotExist()
+            throws Exception {
+
+        when(adminUserService.findUserByEmail(EMAIL))
+                .thenThrow(new ResourceNotFoundException(
+                        "User with email " + EMAIL + " not found"));
+
+        mockMvc.perform(get(BASE_URL + "/email")
+                        .param("email", EMAIL))
+
+                .andExpect(status().isNotFound())
+
+                .andExpect(jsonPath("$.message")
+                        .value("User with email " + EMAIL + " not found"));
+
+        verify(adminUserService)
+                .findUserByEmail(EMAIL);
+    }
 }
