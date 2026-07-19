@@ -57,25 +57,5 @@ public class UserMapper {
         if (dto.email() != null && !dto.email().isBlank()) {
             user.setEmail(dto.email());
         }
-
-        if (dto.addresses() != null) {
-
-            user.getAddresses().clear();
-
-            var addresses = mapList(dto.addresses(), addressMapper::toEntity);
-            addresses.forEach(address -> address.setUser(user));
-
-            user.getAddresses().addAll(addresses);
-        }
-
-        if (dto.phones() != null) {
-
-            user.getPhones().clear();
-
-            var phones = mapList(dto.phones(), phoneMapper::toEntity);
-            phones.forEach(phone -> phone.setUser(user));
-
-            user.getPhones().addAll(phones);
-        }
     }
 }

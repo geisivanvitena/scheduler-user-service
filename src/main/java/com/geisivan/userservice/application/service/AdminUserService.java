@@ -1,6 +1,7 @@
 package com.geisivan.userservice.application.service;
 
 import com.geisivan.userservice.application.dto.request.AdminUserRequestDTO;
+import com.geisivan.userservice.application.dto.request.UserUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.response.PageResponseDTO;
 import com.geisivan.userservice.application.dto.response.UserResponseDTO;
 import com.geisivan.userservice.domain.enums.RoleName;
@@ -16,7 +17,9 @@ public interface AdminUserService {
             RoleName role,
             Pageable pageable);
 
-    UserResponseDTO findUserById(Long userId);
+    UserResponseDTO findUserById(Long id);
 
     UserResponseDTO findUserByEmail(String email);
+
+    UserResponseDTO updateUser(Long id, UserUpdateRequestDTO dto);
 }

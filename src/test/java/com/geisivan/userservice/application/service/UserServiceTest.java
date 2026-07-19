@@ -4,6 +4,7 @@ import com.geisivan.userservice.application.dto.request.UserUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.response.UserResponseDTO;
 import com.geisivan.userservice.application.mapper.UserMapper;
 import com.geisivan.userservice.application.service.impl.UserServiceImpl;
+import com.geisivan.userservice.application.validator.UserValidator;
 import com.geisivan.userservice.domain.entity.User;
 import com.geisivan.userservice.domain.enums.UserStatus;
 import com.geisivan.userservice.infrastructure.repository.UserRepository;
@@ -27,6 +28,9 @@ class UserServiceTest {
     private static final String EMAIL = "teste@gmail.com";
 
     private User user;
+
+    @Mock
+    private UserValidator userValidator;
 
     @Mock
     private CurrentUserService currentUserService;
@@ -96,8 +100,6 @@ class UserServiceTest {
                 new UserUpdateRequestDTO(
                         "Updated User",
                         "updated@gmail.com",
-                        null,
-                        null,
                         null
                 );
 
@@ -140,9 +142,7 @@ class UserServiceTest {
                 new UserUpdateRequestDTO(
                         "Updated User",
                         "updated@gmail.com",
-                        "123456",
-                        null,
-                        null
+                        "123456"
                 );
 
         UserResponseDTO response =
@@ -188,8 +188,6 @@ class UserServiceTest {
                 new UserUpdateRequestDTO(
                         "Updated User",
                         "updated@gmail.com",
-                        null,
-                        null,
                         null
                 );
 
@@ -230,9 +228,7 @@ class UserServiceTest {
                 new UserUpdateRequestDTO(
                         "Updated User",
                         "updated@gmail.com",
-                        "",
-                        null,
-                        null
+                        ""
                 );
 
         UserResponseDTO response =

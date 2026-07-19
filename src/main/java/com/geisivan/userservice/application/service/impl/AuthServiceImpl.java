@@ -6,10 +6,10 @@ import com.geisivan.userservice.application.dto.response.LoginResponseDTO;
 import com.geisivan.userservice.application.dto.response.UserResponseDTO;
 import com.geisivan.userservice.application.mapper.UserMapper;
 import com.geisivan.userservice.application.service.AuthService;
+import com.geisivan.userservice.application.validator.UserValidator;
 import com.geisivan.userservice.domain.entity.Role;
 import com.geisivan.userservice.domain.entity.User;
 import com.geisivan.userservice.domain.enums.RoleName;
-import com.geisivan.userservice.infrastructure.exception.custom.ConflictException;
 import com.geisivan.userservice.infrastructure.exception.custom.ResourceNotFoundException;
 import com.geisivan.userservice.infrastructure.exception.custom.UserUnauthorizedException;
 import com.geisivan.userservice.infrastructure.repository.RoleRepository;
@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
+    private final UserValidator userValidator;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
@@ -39,7 +40,7 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public UserResponseDTO register(UserRequestDTO dto) {
 
-        validateEmailExists(dto.email());
+        userValidator.validateEmailExists(dto.email());
 
         User user = buildUser(dto);
 
@@ -92,13 +93,5 @@ public class AuthServiceImpl implements AuthService {
         return roleRepository.findByName(RoleName.ROLE_USER)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Default role not found"));
-    }
-
-    private void validateEmailExists(String email) {
-
-        if (userRepository.existsByEmail(email)) {
-            throw new ConflictException(
-                    "Email " + email + "already exists");
-        }
     }
 }

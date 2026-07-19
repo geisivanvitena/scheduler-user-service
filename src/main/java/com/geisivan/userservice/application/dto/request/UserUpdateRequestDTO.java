@@ -1,9 +1,7 @@
 package com.geisivan.userservice.application.dto.request;
 
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
-import java.util.List;
 
 public record UserUpdateRequestDTO(
 
@@ -14,11 +12,5 @@ public record UserUpdateRequestDTO(
         String email,
 
         @Size(min = 6, message = "Password must have at least 6 characters")
-        String password,
-
-        @Valid
-        List<AddressRequestDTO> addresses,
-
-        @Valid
-        List<PhoneRequestDTO> phones
+        String password
 ) {}

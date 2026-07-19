@@ -48,11 +48,11 @@ public class PhoneServiceImpl implements PhoneService {
     @Transactional
     @Override
     public PhoneResponseDTO updateAuthenticatedUserPhone(
-            Long phoneId, PhoneUpdateRequestDTO dto) {
+            Long id, PhoneUpdateRequestDTO dto) {
 
         User user = currentUserService.getAuthenticatedUser();
 
-        Phone phone = getPhoneByIdAndUserId(phoneId, user.getId());
+        Phone phone = getPhoneByIdAndUserId(id, user.getId());
         phone.setUser(user);
 
         phoneMapper.update(dto, phone);
@@ -62,19 +62,18 @@ public class PhoneServiceImpl implements PhoneService {
 
     @Transactional
     @Override
-    public void deleteAuthenticatedUserPhone(Long phoneId) {
+    public void deleteAuthenticatedUserPhone(Long id) {
 
         User user = currentUserService.getAuthenticatedUser();
 
-        Phone phone = getPhoneByIdAndUserId(phoneId, user.getId());
+        Phone phone = getPhoneByIdAndUserId(id, user.getId());
 
         phoneRepository.delete(phone);
     }
 
+    private Phone getPhoneByIdAndUserId(Long id, Long userId) {
 
-    private Phone getPhoneByIdAndUserId(Long phoneId, Long userId) {
-
-        return phoneRepository.findByIdAndUserId(phoneId, userId)
+        return phoneRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Phone not found for the authenticated user."));
 
