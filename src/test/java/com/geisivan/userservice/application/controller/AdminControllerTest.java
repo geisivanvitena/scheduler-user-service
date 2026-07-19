@@ -1,6 +1,7 @@
 package com.geisivan.userservice.application.controller;
 
 import com.geisivan.userservice.application.dto.request.AdminUserRequestDTO;
+import com.geisivan.userservice.application.dto.request.UserUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.response.PageResponseDTO;
 import com.geisivan.userservice.application.dto.response.UserResponseDTO;
 import com.geisivan.userservice.application.service.AdminUserService;
@@ -24,6 +25,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
 @WebMvcTest(controllers = AdminUserController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -326,5 +328,126 @@ class AdminControllerTest {
 
         verify(adminUserService)
                 .findUserByEmail(EMAIL);
+    }
+
+    @Test
+    void updateUser_shouldReturn200_whenRequestIsValid()
+            throws Exception {
+
+        Long userId = 1L;
+
+        String updateRequest = """
+            {
+                "name": "Admin Updated",
+                "email": "updated@gmail.com",
+                "password": "123456"
+            }
+            """;
+
+        UserResponseDTO response =
+                new UserResponseDTO(
+                        userId,
+                        "Admin Updated",
+                        "updated@gmail.com",
+                        UserStatus.ACTIVE,
+                        Set.of(),
+                        List.of(),
+                        List.of(),
+                        Instant.now(),
+                        null
+                );
+
+        when(adminUserService.updateUser(
+                eq(userId),
+                any(UserUpdateRequestDTO.class)))
+                .thenReturn(response);
+
+        mockMvc.perform(put(BASE_URL + "/" + userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateRequest))
+
+                .andExpect(status().isOk())
+
+                .andExpect(jsonPath("$.id")
+                        .value(userId))
+
+                .andExpect(jsonPath("$.name")
+                        .value("Admin Updated"))
+
+                .andExpect(jsonPath("$.email")
+                        .value("updated@gmail.com"));
+
+        verify(adminUserService).updateUser(
+                eq(userId), any(UserUpdateRequestDTO.class));
+    }
+
+    @Test
+    void updateUser_shouldReturn404_whenUserDoesNotExist()
+            throws Exception {
+
+        Long userId = 99L;
+
+        String updateRequest = """
+            {
+                "name": "Admin Updated",
+                "email": "updated@gmail.com",
+                "password": "123456"
+            }
+            """;
+
+        when(adminUserService.updateUser(
+                eq(userId),
+                any(UserUpdateRequestDTO.class)))
+
+                .thenThrow(new ResourceNotFoundException(
+                        "User with id " + userId + " not found"
+                ));
+
+        mockMvc.perform(put(BASE_URL + "/" + userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateRequest))
+
+                .andExpect(status().isNotFound())
+
+                .andExpect(jsonPath("$.message")
+                        .value("User with id 99 not found"));
+
+        verify(adminUserService).updateUser(
+                eq(userId), any(UserUpdateRequestDTO.class));
+    }
+
+    @Test
+    void updateUser_shouldReturn409_whenEmailAlreadyExists()
+            throws Exception {
+
+        Long userId = 1L;
+
+        String updateRequest = """
+            {
+                "name": "Admin Updated",
+                "email": "existing@gmail.com",
+                "password": "123456"
+            }
+            """;
+
+        when(adminUserService.updateUser(
+                eq(userId),
+                any(UserUpdateRequestDTO.class)))
+
+                .thenThrow(new ConflictException(
+                        "Email already exists"
+                ));
+
+        mockMvc.perform(put(BASE_URL + "/" + userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateRequest))
+
+                .andExpect(status().isConflict())
+
+                .andExpect(jsonPath("$.message")
+                        .value("Email already exists"));
+
+        verify(adminUserService).updateUser(
+                eq(userId), any(UserUpdateRequestDTO.class));
     }
 }
