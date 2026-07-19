@@ -48,11 +48,11 @@ public class AddressServiceImpl implements AddressService {
     @Transactional
     @Override
     public AddressResponseDTO updateAuthenticatedUserAddress(
-            Long addressId, AddressUpdateRequestDTO dto) {
+            Long id, AddressUpdateRequestDTO dto) {
 
         User user = currentUserService.getAuthenticatedUser();
 
-        Address address = getAddressByIdAndUserId(addressId, user.getId());
+        Address address = getAddressByIdAndUserId(id, user.getId());
 
         addressMapper.update(dto, address);
 
@@ -61,18 +61,18 @@ public class AddressServiceImpl implements AddressService {
 
     @Transactional
     @Override
-    public void deleteAuthenticatedUserAddress(Long addressId) {
+    public void deleteAuthenticatedUserAddress(Long id) {
 
         User user = currentUserService.getAuthenticatedUser();
 
-        Address address = getAddressByIdAndUserId(addressId, user.getId());
+        Address address = getAddressByIdAndUserId(id, user.getId());
 
         addressRepository.delete(address);
     }
 
-    private Address getAddressByIdAndUserId(Long addressId, Long userId) {
+    private Address getAddressByIdAndUserId(Long id, Long userId) {
 
-        return addressRepository.findByIdAndUserId(addressId, userId)
+        return addressRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Address not found for the authenticated user."));
     }

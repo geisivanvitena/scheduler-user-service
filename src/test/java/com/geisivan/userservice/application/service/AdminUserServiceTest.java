@@ -7,6 +7,7 @@ import com.geisivan.userservice.application.dto.response.UserResponseDTO;
 import com.geisivan.userservice.application.mapper.AdminUserMapper;
 import com.geisivan.userservice.application.mapper.UserMapper;
 import com.geisivan.userservice.application.service.impl.AdminUserServiceImpl;
+import com.geisivan.userservice.application.validator.UserValidator;
 import com.geisivan.userservice.domain.entity.Role;
 import com.geisivan.userservice.domain.entity.User;
 import com.geisivan.userservice.domain.enums.RoleName;
@@ -32,6 +33,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 @ExtendWith(MockitoExtension.class)
 class AdminUserServiceTest {
+
+    @Mock
+    private UserValidator userValidator;
 
     @Mock
     private AdminUserMapper adminUserMapper;
@@ -111,8 +115,9 @@ class AdminUserServiceTest {
                         null
                 );
 
-        when(userRepository.existsByEmail(EMAIL))
-                .thenReturn(false);
+        doNothing()
+                .when(userValidator)
+                .validateEmailExists(EMAIL);
 
         when(adminUserMapper.toEntity(dto))
                 .thenReturn(user);
@@ -129,12 +134,13 @@ class AdminUserServiceTest {
         when(userMapper.toDTO(user))
                 .thenReturn(response);
 
-        var result = adminUserServiceImpl.createUser(dto);
+        UserResponseDTO result =
+                adminUserServiceImpl.createUser(dto);
 
         assertNotNull(result);
         assertEquals(EMAIL, result.email());
 
-        verify(userRepository).existsByEmail(EMAIL);
+        verify(userValidator).validateEmailExists(EMAIL);
         verify(adminUserMapper).toEntity(dto);
         verify(passwordEncoder).encode(PASSWORD);
         verify(roleRepository).findByName(RoleName.ROLE_ADMIN);
@@ -156,13 +162,14 @@ class AdminUserServiceTest {
                         List.of()
                 );
 
-        when(userRepository.existsByEmail(EMAIL))
-                .thenReturn(true);
+        doThrow(new ConflictException("Email already exists"))
+                .when(userValidator)
+                .validateEmailExists(EMAIL);
 
         assertThrows(ConflictException.class,
                 () -> adminUserServiceImpl.createUser(dto));
 
-        verify(userRepository).existsByEmail(EMAIL);
+        verify(userValidator).validateEmailExists(EMAIL);
         verifyNoInteractions(adminUserMapper);
         verifyNoInteractions(passwordEncoder);
         verifyNoInteractions(roleRepository);
@@ -182,8 +189,9 @@ class AdminUserServiceTest {
                         List.of()
                 );
 
-        when(userRepository.existsByEmail(EMAIL))
-                .thenReturn(false);
+        doNothing()
+                .when(userValidator)
+                .validateEmailExists(EMAIL);
 
         when(adminUserMapper.toEntity(dto))
                 .thenReturn(user);
@@ -197,7 +205,7 @@ class AdminUserServiceTest {
         assertThrows(ResourceNotFoundException.class,
                 () -> adminUserServiceImpl.createUser(dto));
 
-        verify(userRepository).existsByEmail(EMAIL);
+        verify(userValidator).validateEmailExists(EMAIL);
         verify(adminUserMapper).toEntity(dto);
         verify(passwordEncoder).encode(PASSWORD);
         verify(roleRepository).findByName(RoleName.ROLE_ADMIN);

@@ -5,6 +5,7 @@ import com.geisivan.userservice.application.dto.request.UserRequestDTO;
 import com.geisivan.userservice.application.dto.response.UserResponseDTO;
 import com.geisivan.userservice.application.mapper.UserMapper;
 import com.geisivan.userservice.application.service.impl.AuthServiceImpl;
+import com.geisivan.userservice.application.validator.UserValidator;
 import com.geisivan.userservice.domain.entity.Role;
 import com.geisivan.userservice.domain.entity.User;
 import com.geisivan.userservice.domain.enums.RoleName;
@@ -34,6 +35,9 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
+
+    @Mock
+    private UserValidator userValidator;
 
     @Mock
     private UserRepository userRepository;
@@ -103,11 +107,12 @@ class AuthServiceTest {
                         null
                 );
 
-        when(userRepository.existsByEmail(EMAIL))
-                .thenReturn(false);
+        doNothing()
+                .when(userValidator)
+                .validateEmailExists(EMAIL);
 
-        when(passwordEncoder.encode("123456"))
-                .thenReturn("encoded");
+        when(passwordEncoder.encode(PASSWORD))
+                .thenReturn("encodedPassword");
 
         when(userMapper.toEntity(dto))
                 .thenReturn(user);
@@ -126,7 +131,7 @@ class AuthServiceTest {
         assertNotNull(result);
         assertEquals(EMAIL, result.email());
 
-        verify(userRepository).existsByEmail(EMAIL);
+        verify(userValidator).validateEmailExists(EMAIL);
         verify(passwordEncoder).encode("123456");
         verify(roleRepository).findByName(RoleName.ROLE_USER);
         verify(userRepository).save(user);
@@ -145,14 +150,16 @@ class AuthServiceTest {
                         List.of()
                 );
 
-        when(userRepository.existsByEmail(EMAIL))
-                .thenReturn(true);
+        doThrow(new ConflictException("Email already exists"))
+                .when(userValidator)
+                .validateEmailExists(EMAIL);
 
         assertThrows(ConflictException.class,
                 () -> authServiceImpl.register(dto));
 
-        verify(userRepository).existsByEmail(EMAIL);
+        verify(userValidator).validateEmailExists(EMAIL);
         verifyNoInteractions(userMapper);
+        verifyNoInteractions(userRepository);
     }
 
     @Test
@@ -166,8 +173,9 @@ class AuthServiceTest {
                         List.of()
                 );
 
-        when(userRepository.existsByEmail(EMAIL))
-                .thenReturn(false);
+        doNothing()
+                .when(userValidator)
+                .validateEmailExists(EMAIL);
 
         when(userMapper.toEntity(dto))
                 .thenReturn(user);
@@ -181,7 +189,7 @@ class AuthServiceTest {
         assertThrows(ResourceNotFoundException.class,
                 () -> authServiceImpl.register(dto));
 
-        verify(userRepository).existsByEmail(EMAIL);
+        verify(userValidator).validateEmailExists(EMAIL);
         verify(userMapper).toEntity(dto);
         verify(passwordEncoder).encode(PASSWORD);
         verify(roleRepository).findByName(RoleName.ROLE_USER);

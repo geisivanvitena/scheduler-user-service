@@ -1,6 +1,7 @@
 package com.geisivan.userservice.application.controller;
 
 import com.geisivan.userservice.application.dto.request.AdminUserRequestDTO;
+import com.geisivan.userservice.application.dto.request.UserUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.response.PageResponseDTO;
 import com.geisivan.userservice.application.dto.response.UserResponseDTO;
 import com.geisivan.userservice.application.service.AdminUserService;
@@ -31,7 +32,7 @@ public class AdminUserController {
 
     @GetMapping
     public ResponseEntity<PageResponseDTO<UserResponseDTO>> findAllUsers(
-            @RequestParam(required = false) UserStatus  status,
+            @RequestParam(required = false) UserStatus status,
             @RequestParam(required = false) RoleName role,
             Pageable pageable){
 
@@ -39,11 +40,11 @@ public class AdminUserController {
                 adminUserService.findAllUsers(status, role, pageable));
     }
 
-    @GetMapping("/{userId}")
+    @GetMapping("/{id}")
     public ResponseEntity<UserResponseDTO> findUserById(
-            @PathVariable Long userId) {
+            @PathVariable Long id) {
 
-        return ResponseEntity.ok(adminUserService.findUserById(userId));
+        return ResponseEntity.ok(adminUserService.findUserById(id));
     }
 
     @GetMapping("/email")
@@ -51,5 +52,13 @@ public class AdminUserController {
             @RequestParam String email) {
 
         return ResponseEntity.ok(adminUserService.findUserByEmail(email));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UserResponseDTO> updateUser(
+            @PathVariable Long id,
+            @Valid @RequestBody UserUpdateRequestDTO dto) {
+
+        return ResponseEntity.ok(adminUserService.updateUser(id, dto));
     }
 }

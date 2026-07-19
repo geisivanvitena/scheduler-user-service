@@ -1,16 +1,17 @@
 package com.geisivan.userservice.application.service.impl;
 
 import com.geisivan.userservice.application.dto.request.AdminUserRequestDTO;
+import com.geisivan.userservice.application.dto.request.UserUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.response.PageResponseDTO;
 import com.geisivan.userservice.application.dto.response.UserResponseDTO;
 import com.geisivan.userservice.application.mapper.AdminUserMapper;
 import com.geisivan.userservice.application.mapper.UserMapper;
 import com.geisivan.userservice.application.service.AdminUserService;
+import com.geisivan.userservice.application.validator.UserValidator;
 import com.geisivan.userservice.domain.entity.Role;
 import com.geisivan.userservice.domain.entity.User;
 import com.geisivan.userservice.domain.enums.RoleName;
 import com.geisivan.userservice.domain.enums.UserStatus;
-import com.geisivan.userservice.infrastructure.exception.custom.ConflictException;
 import com.geisivan.userservice.infrastructure.exception.custom.ResourceNotFoundException;
 import com.geisivan.userservice.infrastructure.repository.RoleRepository;
 import com.geisivan.userservice.infrastructure.repository.UserRepository;
@@ -27,11 +28,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AdminUserServiceImpl implements AdminUserService {
 
+    private final UserValidator userValidator;
     private final AdminUserMapper adminUserMapper;
     private final UserMapper userMapper;
-    private final PasswordEncoder passwordEncoder;
     private final UserRepository  userRepository;
     private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
     private static final String NOT_FOUND = " not found";
 
@@ -39,7 +41,7 @@ public class AdminUserServiceImpl implements AdminUserService {
     @Override
     public UserResponseDTO createUser(AdminUserRequestDTO dto) {
 
-        validateEmailExists(dto.email());
+        userValidator.validateEmailExists(dto.email());
 
         User user = buildAdminUser(dto);
 
@@ -66,11 +68,9 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     @Transactional(readOnly = true)
     @Override
-    public UserResponseDTO findUserById(Long userId) {
+    public UserResponseDTO findUserById(Long id) {
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "User with id " + userId + NOT_FOUND));
+        User user = getUserById(id);
 
         return userMapper.toDTO(user);
     }
@@ -79,9 +79,25 @@ public class AdminUserServiceImpl implements AdminUserService {
     @Override
     public UserResponseDTO findUserByEmail(String email) {
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "User with email " + email + NOT_FOUND));
+        User user = getUserByEmail(email);
+
+        return userMapper.toDTO(user);
+    }
+
+    @Transactional
+    @Override
+    public UserResponseDTO updateUser(Long id, UserUpdateRequestDTO dto) {
+
+        User user = getUserById(id);
+
+        userValidator.validateEmailUpdate(user, dto.email());
+
+        userMapper.update(dto, user);
+
+        updatePassword(dto, user);
+
+        // Ensures @LastModifiedDate is updated before mapping the response
+        userRepository.flush();
 
         return userMapper.toDTO(user);
     }
@@ -102,11 +118,10 @@ public class AdminUserServiceImpl implements AdminUserService {
         return user;
     }
 
-    private void validateEmailExists(String email) {
+    private void updatePassword(UserUpdateRequestDTO dto, User user) {
 
-        if (userRepository.existsByEmail(email)){
-            throw new ConflictException(
-                    "Email " + email + "already exists");
+        if (dto.password() != null && !dto.password().isBlank()) {
+            user.setPassword(passwordEncoder.encode(dto.password()));
         }
     }
 
@@ -115,5 +130,19 @@ public class AdminUserServiceImpl implements AdminUserService {
         return roleRepository.findByName(roleName)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Role " + roleName + NOT_FOUND));
+    }
+
+    private User getUserById(Long id){
+
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User with ID " + id + NOT_FOUND));
+    }
+
+    private User getUserByEmail(String email){
+
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User with email " + email + NOT_FOUND));
     }
 }

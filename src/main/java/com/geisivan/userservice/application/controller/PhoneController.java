@@ -34,20 +34,20 @@ public class PhoneController {
                 phoneService.findAuthenticatedUserPhones());
     }
 
-    @PutMapping("/{phoneId}")
+    @PutMapping("/{id}")
     public ResponseEntity<PhoneResponseDTO> updateAuthenticatedUserPhone(
-            @PathVariable Long phoneId,
+            @PathVariable Long id,
             @Valid @RequestBody PhoneUpdateRequestDTO dto) {
 
         return ResponseEntity.ok(
-                phoneService.updateAuthenticatedUserPhone(phoneId, dto));
+                phoneService.updateAuthenticatedUserPhone(id, dto));
     }
 
-    @DeleteMapping("/{phoneId}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAuthenticatedUserPhone(
-            @PathVariable Long phoneId) {
+            @PathVariable Long id) {
 
-        phoneService.deleteAuthenticatedUserPhone(phoneId);
+        phoneService.deleteAuthenticatedUserPhone(id);
 
         return ResponseEntity.noContent().build();
     }

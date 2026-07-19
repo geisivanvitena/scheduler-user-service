@@ -34,20 +34,20 @@ public class AddressController {
                 addressService.findAuthenticatedUserAddresses());
     }
 
-    @PutMapping("/{addressId}")
+    @PutMapping("/{id}")
     public ResponseEntity<AddressResponseDTO> updateAuthenticatedUserAddress(
-            @PathVariable("addressId") Long addressId,
+            @PathVariable("id") Long id,
             @Valid @RequestBody AddressUpdateRequestDTO dto) {
 
         return ResponseEntity.ok(
-                addressService.updateAuthenticatedUserAddress(addressId, dto));
+                addressService.updateAuthenticatedUserAddress(id, dto));
     }
 
-    @DeleteMapping("/{addressId}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAuthenticatedUserAddress(
-            @PathVariable("addressId") Long addressId) {
+            @PathVariable("id") Long id) {
 
-        addressService.deleteAuthenticatedUserAddress(addressId);
+        addressService.deleteAuthenticatedUserAddress(id);
 
         return ResponseEntity.noContent().build();
     }
