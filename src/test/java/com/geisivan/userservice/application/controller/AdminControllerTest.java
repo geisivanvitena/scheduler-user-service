@@ -294,7 +294,7 @@ class AdminControllerTest {
         when(adminUserService.findUserByEmail(EMAIL))
                 .thenReturn(response);
 
-        mockMvc.perform(get(BASE_URL + "/search")
+        mockMvc.perform(get(BASE_URL + "/email")
                         .param("email", EMAIL))
 
                 .andExpect(status().isOk())
@@ -316,11 +316,15 @@ class AdminControllerTest {
                 .thenThrow(new ResourceNotFoundException(
                         "User with email " + EMAIL + " not found"));
 
-        mockMvc.perform(get(BASE_URL + "/search")
+        mockMvc.perform(get(BASE_URL + "/email")
                         .param("email", EMAIL))
 
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
 
-        verify(adminUserService).findUserByEmail(EMAIL);
+                .andExpect(jsonPath("$.message")
+                        .value("User with email " + EMAIL + " not found"));
+
+        verify(adminUserService)
+                .findUserByEmail(EMAIL);
     }
 }
