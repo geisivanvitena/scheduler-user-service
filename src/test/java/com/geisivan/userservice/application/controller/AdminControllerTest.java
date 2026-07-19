@@ -22,10 +22,12 @@ import java.util.List;
 import java.util.Set;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import com.geisivan.userservice.application.dto.request.UserStatusUpdateRequestDTO;
 
 @WebMvcTest(controllers = AdminUserController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -449,5 +451,73 @@ class AdminControllerTest {
 
         verify(adminUserService).updateUser(
                 eq(userId), any(UserUpdateRequestDTO.class));
+    }
+
+    @Test
+    void updateUserStatus_shouldReturn200_whenStatusUpdated()
+            throws Exception {
+
+        when(adminUserService.updateUserStatus(
+                eq(1L),
+                any(UserStatusUpdateRequestDTO.class)))
+
+                .thenReturn(createResponse());
+
+        mockMvc.perform(patch(BASE_URL + "/1/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                    {
+                       "status":"PENDING"
+                    }
+                    """))
+
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status")
+                        .value("PENDING"));
+
+        verify(adminUserService).updateUserStatus(
+                eq(1L), any(UserStatusUpdateRequestDTO.class));
+    }
+
+    @Test
+    void updateUserStatus_shouldReturn404_whenUserNotFound()
+            throws Exception {
+
+        when(adminUserService.updateUserStatus(
+                eq(99L),
+                any(UserStatusUpdateRequestDTO.class)))
+
+                .thenThrow(new ResourceNotFoundException(
+                        "User with ID 99 not found"));
+
+        mockMvc.perform(patch(BASE_URL + "/99/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                    {
+                      "status":"ACTIVE"
+                    }
+                    """))
+
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message")
+                        .value("User with ID 99 not found"));
+
+        verify(adminUserService).updateUserStatus(
+                eq(99L), any(UserStatusUpdateRequestDTO.class));
+    }
+
+    private UserResponseDTO createResponse() {
+
+        return new UserResponseDTO(
+                1L,
+                "Admin Test",
+                EMAIL,
+                UserStatus.PENDING,
+                Set.of(),
+                List.of(),
+                List.of(),
+                Instant.now(),
+                null
+        );
     }
 }
