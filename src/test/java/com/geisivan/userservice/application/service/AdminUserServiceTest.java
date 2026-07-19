@@ -1,6 +1,7 @@
 package com.geisivan.userservice.application.service;
 
 import com.geisivan.userservice.application.dto.request.AdminUserRequestDTO;
+import com.geisivan.userservice.application.dto.request.UserUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.response.PageResponseDTO;
 import com.geisivan.userservice.application.dto.response.RoleResponseDTO;
 import com.geisivan.userservice.application.dto.response.UserResponseDTO;
@@ -363,5 +364,245 @@ class AdminUserServiceTest {
 
         verify(userRepository).findByEmail(EMAIL);
         verifyNoInteractions(userMapper);
+    }
+
+    @Test
+    void updateUser_shouldReturnUser_whenRequestIsValid() {
+
+        Long userId = 1L;
+
+        UserUpdateRequestDTO dto =
+                new UserUpdateRequestDTO(
+                        "Admin Updated",
+                        "updated@gmail.com",
+                        PASSWORD
+                );
+
+        UserResponseDTO response =
+                new UserResponseDTO(
+                        userId,
+                        "Admin Updated",
+                        "updated@gmail.com",
+                        UserStatus.ACTIVE,
+                        Set.of(),
+                        List.of(),
+                        List.of(),
+                        Instant.now(),
+                        null
+                );
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        doNothing()
+                .when(userValidator)
+                .validateEmailUpdate(
+                        user,
+                        dto.email());
+
+        doNothing()
+                .when(userRepository)
+                .flush();
+
+        when(userMapper.toDTO(user))
+                .thenReturn(response);
+
+        UserResponseDTO result =
+                adminUserServiceImpl.updateUser(userId, dto);
+
+        assertNotNull(result);
+        assertEquals("updated@gmail.com", result.email());
+
+        verify(userRepository).findById(userId);
+        verify(userValidator).validateEmailUpdate(user, dto.email());
+        verify(userRepository).flush();
+        verify(userMapper).toDTO(user);
+    }
+
+    @Test
+    void updateUser_shouldThrowResourceNotFoundException_whenUserDoesNotExist() {
+
+        Long userId = 99L;
+
+        UserUpdateRequestDTO dto =
+                new UserUpdateRequestDTO(
+                        "Admin Updated",
+                        EMAIL,
+                        PASSWORD
+                );
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.empty());
+
+        assertThrows(
+                ResourceNotFoundException.class,
+                () -> adminUserServiceImpl.updateUser(userId, dto));
+
+        verify(userRepository).findById(userId);
+        verifyNoInteractions(userMapper);
+        verifyNoInteractions(userValidator);
+    }
+
+    @Test
+    void updateUser_shouldThrowConflictException_whenEmailAlreadyExists() {
+
+        Long userId = 1L;
+
+        UserUpdateRequestDTO dto =
+                new UserUpdateRequestDTO(
+                        "Admin Updated",
+                        "existing@gmail.com",
+                        PASSWORD
+                );
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+
+        doThrow(new ConflictException(
+                "Email already exists"))
+                .when(userValidator)
+                .validateEmailUpdate(user, dto.email());
+
+        assertThrows(
+                ConflictException.class,
+                () -> adminUserServiceImpl.updateUser(userId, dto));
+
+        verify(userRepository).findById(userId);
+        verify(userValidator).validateEmailUpdate(user, dto.email());
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void updateUser_shouldEncodePassword_whenPasswordIsProvided() {
+
+        Long userId = 1L;
+
+        UserUpdateRequestDTO dto =
+                new UserUpdateRequestDTO(
+                        "Updated User",
+                        "updated@gmail.com",
+                        "123456"
+                );
+
+        UserResponseDTO response =
+                new UserResponseDTO(
+                        userId,
+                        "Updated User",
+                        "updated@gmail.com",
+                        UserStatus.ACTIVE,
+                        Set.of(),
+                        List.of(),
+                        List.of(),
+                        Instant.now(),
+                        Instant.now()
+                );
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        doNothing().when(userValidator).validateEmailUpdate(user, dto.email());
+
+        when(passwordEncoder.encode("123456"))
+                .thenReturn("encoded-password");
+
+        when(userMapper.toDTO(user)).thenReturn(response);
+
+        var result =
+                adminUserServiceImpl.updateUser(userId, dto);
+
+        assertNotNull(result);
+
+        verify(userRepository).findById(userId);
+        verify(userValidator).validateEmailUpdate(user, dto.email());
+        verify(passwordEncoder).encode("123456");
+        verify(userRepository).flush();
+        verify(userMapper).toDTO(user);
+
+        assertEquals("encoded-password", user.getPassword());
+    }
+
+    @Test
+    void updateUser_shouldNotEncodePassword_whenPasswordIsNull() {
+
+        Long userId = 1L;
+
+        UserUpdateRequestDTO dto =
+                new UserUpdateRequestDTO(
+                        "Updated User",
+                        "updated@gmail.com",
+                        null
+                );
+
+        UserResponseDTO response =
+                new UserResponseDTO(
+                        userId,
+                        "Updated User",
+                        "updated@gmail.com",
+                        UserStatus.ACTIVE,
+                        Set.of(),
+                        List.of(),
+                        List.of(),
+                        Instant.now(),
+                        Instant.now()
+                );
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        doNothing().when(userValidator).validateEmailUpdate(user, dto.email());
+
+        when(userMapper.toDTO(user)).thenReturn(response);
+
+        var result =
+                adminUserServiceImpl.updateUser(userId, dto);
+
+        assertNotNull(result);
+
+        verify(passwordEncoder, never()).encode(anyString());
+        verify(userRepository).flush();
+        verify(userMapper).toDTO(user);
+    }
+
+    @Test
+    void updateUser_shouldNotEncodePassword_whenPasswordIsBlank() {
+
+        Long userId = 1L;
+
+        UserUpdateRequestDTO dto =
+                new UserUpdateRequestDTO(
+                        "Updated User",
+                        "updated@gmail.com",
+                        ""
+                );
+
+        UserResponseDTO response =
+                new UserResponseDTO(
+                        userId,
+                        "Updated User",
+                        "updated@gmail.com",
+                        UserStatus.ACTIVE,
+                        Set.of(),
+                        List.of(),
+                        List.of(),
+                        Instant.now(),
+                        Instant.now()
+                );
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        doNothing().when(userValidator).validateEmailUpdate(user, dto.email());
+
+        when(userMapper.toDTO(user)).thenReturn(response);
+
+        var result =
+                adminUserServiceImpl.updateUser(userId, dto);
+
+        assertNotNull(result);
+
+        verify(passwordEncoder, never()).encode(anyString());
+        verify(userRepository).flush();
+        verify(userMapper).toDTO(user);
     }
 }
