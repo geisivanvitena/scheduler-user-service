@@ -36,7 +36,7 @@ public class AdminUserController {
     public ResponseEntity<PageResponseDTO<UserResponseDTO>> findAllUsers(
             @RequestParam(required = false) UserStatus status,
             @RequestParam(required = false) RoleName role,
-            Pageable pageable){
+            Pageable pageable) {
 
         return ResponseEntity.ok(
                 adminUserService.findAllUsers(status, role, pageable));
@@ -78,5 +78,14 @@ public class AdminUserController {
             @Valid @RequestBody UserRoleUpdateRequestDTO dto) {
 
         return ResponseEntity.ok(adminUserService.updateUserRole(id, dto));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(
+            @Valid @PathVariable Long id) {
+
+        adminUserService.deleteUser(id);
+
+        return ResponseEntity.noContent().build();
     }
 }
