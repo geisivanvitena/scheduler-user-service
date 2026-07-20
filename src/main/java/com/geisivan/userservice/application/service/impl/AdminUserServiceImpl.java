@@ -1,6 +1,7 @@
 package com.geisivan.userservice.application.service.impl;
 
 import com.geisivan.userservice.application.dto.request.AdminUserRequestDTO;
+import com.geisivan.userservice.application.dto.request.UserRoleUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.request.UserStatusUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.request.UserUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.response.PageResponseDTO;
@@ -114,20 +115,32 @@ public class AdminUserServiceImpl implements AdminUserService {
         return userMapper.toDTO(user);
     }
 
+    @Transactional
+    @Override
+    public UserResponseDTO updateUserRole(Long id, UserRoleUpdateRequestDTO dto) {
+
+        User user = getUserById(id);
+
+        user.setRoles(buildRoles(dto.roles()));
+
+        return userMapper.toDTO(user);
+    }
+
     private User buildAdminUser(AdminUserRequestDTO dto){
 
         User user = adminUserMapper.toEntity(dto);
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-
-        Set<Role> roles = dto.roles()
-                .stream()
-                .map(this::findRole)
-                .collect(Collectors.toSet());
-
-        user.setRoles(roles);
+        user.setRoles(buildRoles(dto.roles()));
 
         return user;
+    }
+
+    private Set<Role> buildRoles(Set<RoleName> roleNames){
+
+        return  roleNames.stream()
+                .map(this::findRole)
+                .collect(Collectors.toSet());
     }
 
     private void updatePassword(UserUpdateRequestDTO dto, User user) {
