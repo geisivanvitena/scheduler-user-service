@@ -28,6 +28,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import com.geisivan.userservice.application.dto.request.UserStatusUpdateRequestDTO;
+import com.geisivan.userservice.application.dto.request.UserRoleUpdateRequestDTO;
 
 @WebMvcTest(controllers = AdminUserController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -518,6 +519,94 @@ class AdminControllerTest {
                 List.of(),
                 Instant.now(),
                 null
+        );
+    }
+
+    @Test
+    void updateUserRole_shouldReturn200_whenRolesUpdated()
+            throws Exception {
+
+        when(adminUserService.updateUserRole(
+                eq(1L), any(UserRoleUpdateRequestDTO.class)))
+                .thenReturn(createAdminResponse());
+
+        mockMvc.perform(patch(BASE_URL + "/1/roles")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                    {
+                        "roles": ["ROLE_ADMIN"]
+                    }
+                    """))
+
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.email").value(EMAIL));
+
+        verify(adminUserService).updateUserRole(eq(1L),
+                any(UserRoleUpdateRequestDTO.class));
+    }
+
+    @Test
+    void updateUserRole_shouldReturn404_whenUserNotFound()
+            throws Exception {
+
+        when(adminUserService.updateUserRole(
+                eq(99L), any(UserRoleUpdateRequestDTO.class))).thenThrow(
+                        new ResourceNotFoundException("User with ID 99 not found"));
+
+        mockMvc.perform(patch(BASE_URL + "/99/roles")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                    {
+                        "roles": ["ROLE_ADMIN"]
+                    }
+                    """))
+
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message")
+                        .value("User with ID 99 not found"));
+
+        verify(adminUserService).updateUserRole(eq(99L),
+                any(UserRoleUpdateRequestDTO.class));
+    }
+
+    @Test
+    void updateUserRole_shouldReturn404_whenRoleNotFound()
+            throws Exception {
+
+        when(adminUserService.updateUserRole(
+                eq(1L), any(UserRoleUpdateRequestDTO.class)))
+                .thenThrow(new ResourceNotFoundException(
+                        "Role ROLE_ADMIN not found"));
+
+        mockMvc.perform(patch(BASE_URL + "/1/roles")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                    {
+                        "roles": ["ROLE_ADMIN"]
+                    }
+                    """))
+
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message")
+                        .value("Role ROLE_ADMIN not found"));
+
+        verify(adminUserService).updateUserRole(eq(1L),
+                any(UserRoleUpdateRequestDTO.class));
+    }
+
+    private UserResponseDTO createAdminResponse() {
+
+        return new UserResponseDTO(
+                1L,
+                "Admin Test",
+                EMAIL,
+                UserStatus.ACTIVE,
+                Set.of(),
+                List.of(),
+                List.of(),
+                Instant.now(),
+                Instant.now()
         );
     }
 }

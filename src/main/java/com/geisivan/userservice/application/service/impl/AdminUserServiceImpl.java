@@ -106,7 +106,8 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     @Transactional
     @Override
-    public UserResponseDTO updateUserStatus(Long id, UserStatusUpdateRequestDTO dto) {
+    public UserResponseDTO updateUserStatus(
+            Long id, UserStatusUpdateRequestDTO dto) {
 
         User user = getUserById(id);
 
@@ -117,7 +118,8 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     @Transactional
     @Override
-    public UserResponseDTO updateUserRole(Long id, UserRoleUpdateRequestDTO dto) {
+    public UserResponseDTO updateUserRole(
+            Long id, UserRoleUpdateRequestDTO dto) {
 
         User user = getUserById(id);
 
@@ -131,6 +133,7 @@ public class AdminUserServiceImpl implements AdminUserService {
         User user = adminUserMapper.toEntity(dto);
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+
         user.setRoles(buildRoles(dto.roles()));
 
         return user;
