@@ -1,6 +1,7 @@
 package com.geisivan.userservice.application.service;
 
 import com.geisivan.userservice.application.dto.request.AdminUserRequestDTO;
+import com.geisivan.userservice.application.dto.request.UserRoleUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.request.UserStatusUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.request.UserUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.response.PageResponseDTO;
@@ -701,5 +702,93 @@ class AdminUserServiceTest {
 
         verify(userRepository).findById(userId);
         verify(userMapper).toDTO(user);
+    }
+
+    @Test
+    void updateUserRole_shouldUpdateRoles_whenRequestIsValid() {
+
+        Long userId = 1L;
+
+        UserRoleUpdateRequestDTO dto =
+                new UserRoleUpdateRequestDTO(
+                        Set.of(RoleName.ROLE_ADMIN)
+                );
+
+        user.setRoles(Set.of());
+
+        UserResponseDTO response =
+                new UserResponseDTO(
+                        userId,
+                        "Admin Test",
+                        EMAIL,
+                        UserStatus.ACTIVE,
+                        Set.of(),
+                        List.of(),
+                        List.of(),
+                        Instant.now(),
+                        Instant.now()
+                );
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        when(roleRepository.findByName(RoleName.ROLE_ADMIN))
+                .thenReturn(Optional.of(role));
+
+        when(userMapper.toDTO(user))
+                .thenReturn(response);
+
+        UserResponseDTO result =
+                adminUserServiceImpl.updateUserRole(userId, dto);
+
+        assertNotNull(result);
+        assertEquals(response, result);
+        assertTrue(user.getRoles().contains(role));
+
+        verify(userRepository).findById(userId);
+        verify(roleRepository).findByName(RoleName.ROLE_ADMIN);
+        verify(userMapper).toDTO(user);
+    }
+
+    @Test
+    void updateUserRole_shouldThrowException_whenUserNotFound() {
+
+        Long userId = 99L;
+
+        UserRoleUpdateRequestDTO dto =
+                new UserRoleUpdateRequestDTO(Set.of(RoleName.ROLE_ADMIN));
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> adminUserServiceImpl.updateUserRole(userId, dto));
+
+        verify(userRepository).findById(userId);
+        verifyNoInteractions(roleRepository);
+        verifyNoInteractions(userMapper);
+    }
+
+    @Test
+    void updateUserRole_shouldThrowException_whenRoleNotFound() {
+
+        Long userId = 1L;
+
+        UserRoleUpdateRequestDTO dto =
+                new UserRoleUpdateRequestDTO(Set.of(RoleName.ROLE_ADMIN));
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        when(roleRepository.findByName(RoleName.ROLE_ADMIN))
+                .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> adminUserServiceImpl.updateUserRole(userId, dto)
+        );
+
+        verify(userRepository).findById(userId);
+        verify(roleRepository).findByName(RoleName.ROLE_ADMIN);
+        verifyNoInteractions(userMapper);
     }
 }

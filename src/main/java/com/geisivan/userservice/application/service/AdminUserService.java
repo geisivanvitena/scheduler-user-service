@@ -15,9 +15,7 @@ public interface AdminUserService {
     UserResponseDTO createUser(AdminUserRequestDTO dto);
 
     PageResponseDTO<UserResponseDTO> findAllUsers(
-            UserStatus status,
-            RoleName role,
-            Pageable pageable);
+            UserStatus status, RoleName role, Pageable pageable);
 
     UserResponseDTO findUserById(Long id);
 
