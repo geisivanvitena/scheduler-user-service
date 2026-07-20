@@ -791,4 +791,36 @@ class AdminUserServiceTest {
         verify(roleRepository).findByName(RoleName.ROLE_ADMIN);
         verifyNoInteractions(userMapper);
     }
+
+    @Test
+    void deleteUser_shouldDeleteUser_whenUserExists() {
+
+        Long userId = 1L;
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        doNothing().when(userRepository)
+                .delete(user);
+
+        adminUserServiceImpl.deleteUser(userId);
+
+        verify(userRepository).findById(userId);
+        verify(userRepository).delete(user);
+    }
+
+    @Test
+    void deleteUser_shouldThrowResourceNotFoundException_whenUserDoesNotExist() {
+
+        Long userId = 99L;
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> adminUserServiceImpl.deleteUser(userId));
+
+        verify(userRepository).findById(userId);
+        verify(userRepository, never()).delete(any());
+    }
 }

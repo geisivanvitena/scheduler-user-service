@@ -595,6 +595,44 @@ class AdminControllerTest {
                 any(UserRoleUpdateRequestDTO.class));
     }
 
+    @Test
+    void deleteUser_shouldReturn204_whenUserExists()
+            throws Exception {
+
+        Long userId = 1L;
+
+        doNothing()
+                .when(adminUserService)
+                .deleteUser(userId);
+
+        mockMvc.perform(delete(BASE_URL + "/" + userId))
+
+                .andExpect(status().isNoContent());
+
+        verify(adminUserService).deleteUser(userId);
+    }
+
+    @Test
+    void deleteUser_shouldReturn404_whenUserDoesNotExist()
+            throws Exception {
+
+        Long userId = 99L;
+
+        doThrow(new ResourceNotFoundException(
+                "User with ID 99 not found"))
+                .when(adminUserService)
+                .deleteUser(userId);
+
+        mockMvc.perform(delete(BASE_URL + "/" + userId))
+
+                .andExpect(status().isNotFound())
+
+                .andExpect(jsonPath("$.message")
+                        .value("User with ID 99 not found"));
+
+        verify(adminUserService).deleteUser(userId);
+    }
+
     private UserResponseDTO createAdminResponse() {
 
         return new UserResponseDTO(
