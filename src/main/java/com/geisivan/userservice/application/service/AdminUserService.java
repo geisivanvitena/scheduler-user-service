@@ -26,4 +26,6 @@ public interface AdminUserService {
     UserResponseDTO updateUserStatus(Long id, UserStatusUpdateRequestDTO dto);
 
     UserResponseDTO updateUserRole(Long id, UserRoleUpdateRequestDTO dto);
+
+    void deleteUser (Long id);
 }

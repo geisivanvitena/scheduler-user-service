@@ -128,6 +128,15 @@ public class AdminUserServiceImpl implements AdminUserService {
         return userMapper.toDTO(user);
     }
 
+    @Transactional
+    @Override
+    public void deleteUser(Long id) {
+
+        User user = getUserById(id);
+
+        userRepository.delete(user);
+    }
+
     private User buildAdminUser(AdminUserRequestDTO dto){
 
         User user = adminUserMapper.toEntity(dto);
