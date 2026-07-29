@@ -2,6 +2,8 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.5.16'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id "org.sonarqube" version "4.4.1.3373"
+	id 'jacoco'
 }
 
 group = 'com.geisivan'
@@ -18,15 +20,75 @@ repositories {
 }
 
 dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'io.github.cdimascio:java-dotenv:5.2.2'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	compileOnly 'org.projectlombok:lombok'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
+
+	// Fix CVE-2025-48924 vulnerability (SpringDoc transitive dependency)
+	implementation 'org.apache.commons:commons-lang3:3.18.0'
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.17'
+
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.13.0'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.13.0'
+	runtimeOnly 'org.postgresql:postgresql'
+
 	annotationProcessor 'org.projectlombok:lombok'
+	compileOnly 'org.projectlombok:lombok'
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
 	testCompileOnly 'org.projectlombok:lombok'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testAnnotationProcessor 'org.projectlombok:lombok'
 }
 
-tasks.named('test') {
+test {
 	useJUnitPlatform()
+	finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+	dependsOn test
+	reports {
+		xml.required = true
+		html.required = true
+	}
+}
+
+jacocoTestCoverageVerification{
+	violationRules {
+		rule {
+			limit {
+				minimum = 0.8
+			}
+		}
+	}
+}
+
+def excludedSonar = [
+		"src/main/java/com/geisivan/userservice/infrastructure/**",
+		"src/main/java/com/geisivan/userservice/application/dto/**",
+		"src/main/java/com/geisivan/userservice/application/mapper/**",
+		"src/main/java/com/geisivan/userservice/domain/entity/**",
+		"src/main/java/com/geisivan/userservice/UserServiceApplication.java",
+		"src/test/java/com/geisivan/userservice/**"
+]
+
+sonarqube {
+	properties {
+		property "sonar.projectKey", "user-service"
+		property "sonar.host.url", "http://localhost:9000"
+		property "sonar.token", System.getenv("SONAR_TOKEN")
+		property "sonar.exclusions", excludedSonar.join(",")
+		property "sonar.tests", "src/test/java"
+		property "sonar.java.binaries", "build/classes/java/main"
+	}
+}
+
+tasks.named("sonarqube") {
+	dependsOn tasks.jacocoTestReport
 }

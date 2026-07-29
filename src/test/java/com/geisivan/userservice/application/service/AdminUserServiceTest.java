@@ -1,0 +1,826 @@
+package com.geisivan.userservice.application.service;
+
+import com.geisivan.userservice.application.dto.request.AdminUserRequestDTO;
+import com.geisivan.userservice.application.dto.request.UserRoleUpdateRequestDTO;
+import com.geisivan.userservice.application.dto.request.UserStatusUpdateRequestDTO;
+import com.geisivan.userservice.application.dto.request.UserUpdateRequestDTO;
+import com.geisivan.userservice.application.dto.response.PageResponseDTO;
+import com.geisivan.userservice.application.dto.response.RoleResponseDTO;
+import com.geisivan.userservice.application.dto.response.UserResponseDTO;
+import com.geisivan.userservice.application.mapper.AdminUserMapper;
+import com.geisivan.userservice.application.mapper.UserMapper;
+import com.geisivan.userservice.application.service.impl.AdminUserServiceImpl;
+import com.geisivan.userservice.application.validator.UserValidator;
+import com.geisivan.userservice.domain.entity.Role;
+import com.geisivan.userservice.domain.entity.User;
+import com.geisivan.userservice.domain.enums.RoleName;
+import com.geisivan.userservice.domain.enums.UserStatus;
+import com.geisivan.userservice.infrastructure.exception.custom.ConflictException;
+import com.geisivan.userservice.infrastructure.exception.custom.ResourceNotFoundException;
+import com.geisivan.userservice.infrastructure.repository.RoleRepository;
+import com.geisivan.userservice.infrastructure.repository.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import java.time.Instant;
+import java.util.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+@ExtendWith(MockitoExtension.class)
+class AdminUserServiceTest {
+
+    @Mock
+    private UserValidator userValidator;
+
+    @Mock
+    private AdminUserMapper adminUserMapper;
+
+    @Mock
+    private UserMapper userMapper;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private RoleRepository roleRepository;
+
+    @InjectMocks
+    private AdminUserServiceImpl adminUserServiceImpl;
+
+    private User user;
+    private Role role;
+
+    private static final String EMAIL = "admin@gmail.com";
+    private static final String PASSWORD = "123456";
+
+    @BeforeEach
+    void setUp() {
+
+        role = new Role();
+        role.setId(1L);
+        role.setName(RoleName.ROLE_ADMIN);
+        role.setDescription("Administrator role");
+
+
+        user = new User();
+        user.setId(1L);
+        user.setName("Admin Test");
+        user.setEmail(EMAIL);
+        user.setPassword(PASSWORD);
+
+        user.setRoles(new HashSet<>());
+        user.setAddresses(new ArrayList<>());
+        user.setPhones(new ArrayList<>());
+    }
+
+    @Test
+    void createUser_shouldReturnUser_whenRequestIsValid() {
+
+        AdminUserRequestDTO dto =
+                new AdminUserRequestDTO(
+                        "Admin Test",
+                        EMAIL,
+                        PASSWORD,
+                        Set.of(RoleName.ROLE_ADMIN),
+                        UserStatus.ACTIVE,
+                        List.of(),
+                        List.of()
+                );
+
+        RoleResponseDTO roleResponse =
+                new RoleResponseDTO(
+                        1L,
+                        RoleName.ROLE_ADMIN,
+                        "Administrator role"
+                );
+
+        UserResponseDTO response =
+                new UserResponseDTO(
+                        1L,
+                        "Admin Test",
+                        EMAIL,
+                        UserStatus.ACTIVE,
+                        Set.of(roleResponse),
+                        List.of(),
+                        List.of(),
+                        Instant.now(),
+                        null
+                );
+
+        doNothing()
+                .when(userValidator)
+                .validateEmailExists(EMAIL);
+
+        when(adminUserMapper.toEntity(dto))
+                .thenReturn(user);
+
+        when(passwordEncoder.encode(PASSWORD))
+                .thenReturn("encodedPassword");
+
+        when(roleRepository.findByName(RoleName.ROLE_ADMIN))
+                .thenReturn(Optional.of(role));
+
+        when(userRepository.save(user))
+                .thenReturn(user);
+
+        when(userMapper.toDTO(user))
+                .thenReturn(response);
+
+        UserResponseDTO result =
+                adminUserServiceImpl.createUser(dto);
+
+        assertNotNull(result);
+        assertEquals(EMAIL, result.email());
+
+        verify(userValidator).validateEmailExists(EMAIL);
+        verify(adminUserMapper).toEntity(dto);
+        verify(passwordEncoder).encode(PASSWORD);
+        verify(roleRepository).findByName(RoleName.ROLE_ADMIN);
+        verify(userRepository).save(user);
+        verify(userMapper).toDTO(user);
+    }
+
+    @Test
+    void createUser_shouldThrowConflictException_whenEmailExists() {
+
+        AdminUserRequestDTO dto =
+                new AdminUserRequestDTO(
+                        "Admin Test",
+                        EMAIL,
+                        PASSWORD,
+                        Set.of(RoleName.ROLE_ADMIN),
+                        UserStatus.ACTIVE,
+                        List.of(),
+                        List.of()
+                );
+
+        doThrow(new ConflictException("Email already exists"))
+                .when(userValidator)
+                .validateEmailExists(EMAIL);
+
+        assertThrows(ConflictException.class,
+                () -> adminUserServiceImpl.createUser(dto));
+
+        verify(userValidator).validateEmailExists(EMAIL);
+        verifyNoInteractions(adminUserMapper);
+        verifyNoInteractions(passwordEncoder);
+        verifyNoInteractions(roleRepository);
+    }
+
+    @Test
+    void createUser_shouldThrowResourceNotFoundException_whenRoleDoesNotExist() {
+
+        AdminUserRequestDTO dto =
+                new AdminUserRequestDTO(
+                        "Admin Test",
+                        EMAIL,
+                        PASSWORD,
+                        Set.of(RoleName.ROLE_ADMIN),
+                        UserStatus.ACTIVE,
+                        List.of(),
+                        List.of()
+                );
+
+        doNothing()
+                .when(userValidator)
+                .validateEmailExists(EMAIL);
+
+        when(adminUserMapper.toEntity(dto))
+                .thenReturn(user);
+
+        when(passwordEncoder.encode(PASSWORD))
+                .thenReturn("encodedPassword");
+
+        when(roleRepository.findByName(RoleName.ROLE_ADMIN))
+                .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> adminUserServiceImpl.createUser(dto));
+
+        verify(userValidator).validateEmailExists(EMAIL);
+        verify(adminUserMapper).toEntity(dto);
+        verify(passwordEncoder).encode(PASSWORD);
+        verify(roleRepository).findByName(RoleName.ROLE_ADMIN);
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void findAllUsers_shouldReturnPageOfUsers() {
+
+        Pageable pageable = PageRequest.of(0, 10);
+
+        UserResponseDTO response =
+                new UserResponseDTO(
+                        1L,
+                        "Admin Test",
+                        EMAIL,
+                        UserStatus.ACTIVE,
+                        Set.of(),
+                        List.of(),
+                        List.of(),
+                        Instant.now(),
+                        null
+                );
+
+        Page<User> userPage = new PageImpl<>(List.of(user));
+
+        when(userRepository.findAllWithFilters(
+                isNull(), isNull(), eq(pageable)))
+                .thenReturn(userPage);
+
+        when(userMapper.toDTO(user))
+                .thenReturn(response);
+
+        PageResponseDTO<UserResponseDTO> result =
+                adminUserServiceImpl.findAllUsers(null, null, pageable);
+
+        assertNotNull(result);
+        assertEquals(1, result.totalElements());
+        assertEquals(EMAIL, result.content().get(0).email());
+
+        verify(userRepository).findAllWithFilters(isNull(), isNull(), eq(pageable));
+        verify(userMapper).toDTO(user);
+    }
+
+    @Test
+    void findAllUsers_shouldReturnEmptyPage_whenUsersDoNotExist() {
+
+        Pageable pageable = PageRequest.of(0, 10);
+
+        when(userRepository.findAllWithFilters(isNull(), isNull(), eq(pageable)))
+                .thenReturn(Page.empty());
+
+        PageResponseDTO<UserResponseDTO> result =
+                adminUserServiceImpl.findAllUsers(null, null, pageable);
+
+        assertNotNull(result);
+        assertTrue(result.content().isEmpty());
+        assertEquals(0, result.totalElements());
+        assertEquals(1, result.totalPages());
+
+        verify(userRepository).findAllWithFilters(isNull(), isNull(), eq(pageable));
+        verifyNoInteractions(userMapper);
+    }
+
+    @Test
+    void findUserById_shouldReturnUser_whenUserExists() {
+
+        Long userId = 1L;
+
+        UserResponseDTO response =
+                new UserResponseDTO(
+                        1L,
+                        "Admin Test",
+                        EMAIL,
+                        UserStatus.ACTIVE,
+                        Set.of(),
+                        List.of(),
+                        List.of(),
+                        Instant.now(),
+                        null
+                );
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        when(userMapper.toDTO(user))
+                .thenReturn(response);
+
+        UserResponseDTO result =
+                adminUserServiceImpl.findUserById(userId);
+
+        assertNotNull(result);
+        assertEquals(userId, result.id());
+        assertEquals(EMAIL, result.email());
+
+        verify(userRepository).findById(userId);
+        verify(userMapper).toDTO(user);
+    }
+
+    @Test
+    void findUserById_shouldThrowResourceNotFoundException_whenUserDoesNotExist() {
+
+        Long userId = 99L;
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> adminUserServiceImpl.findUserById(userId));
+
+        verify(userRepository).findById(userId);
+        verifyNoInteractions(userMapper);
+    }
+
+    @Test
+    void findUserByEmail_shouldReturnUser_whenUserExists() {
+
+        UserResponseDTO response =
+                new UserResponseDTO(
+                        1L,
+                        "Admin Test",
+                        EMAIL,
+                        UserStatus.ACTIVE,
+                        Set.of(),
+                        List.of(),
+                        List.of(),
+                        Instant.now(),
+                        null
+                );
+
+        when(userRepository.findByEmail(EMAIL))
+                .thenReturn(Optional.of(user));
+
+        when(userMapper.toDTO(user))
+                .thenReturn(response);
+
+        UserResponseDTO result =
+                adminUserServiceImpl.findUserByEmail(EMAIL);
+
+        assertNotNull(result);
+        assertEquals(EMAIL, result.email());
+
+        verify(userRepository).findByEmail(EMAIL);
+        verify(userMapper).toDTO(user);
+    }
+
+    @Test
+    void findUserByEmail_shouldThrowResourceNotFoundException_whenUserDoesNotExist() {
+
+        when(userRepository.findByEmail(EMAIL))
+                .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> adminUserServiceImpl.findUserByEmail(EMAIL));
+
+        verify(userRepository).findByEmail(EMAIL);
+        verifyNoInteractions(userMapper);
+    }
+
+    @Test
+    void updateUser_shouldReturnUser_whenRequestIsValid() {
+
+        Long userId = 1L;
+
+        UserUpdateRequestDTO dto =
+                new UserUpdateRequestDTO(
+                        "Admin Updated",
+                        "updated@gmail.com",
+                        PASSWORD
+                );
+
+        UserResponseDTO response =
+                new UserResponseDTO(
+                        userId,
+                        "Admin Updated",
+                        "updated@gmail.com",
+                        UserStatus.ACTIVE,
+                        Set.of(),
+                        List.of(),
+                        List.of(),
+                        Instant.now(),
+                        null
+                );
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        doNothing()
+                .when(userValidator)
+                .validateEmailUpdate(
+                        user,
+                        dto.email());
+
+        doNothing()
+                .when(userRepository)
+                .flush();
+
+        when(userMapper.toDTO(user))
+                .thenReturn(response);
+
+        UserResponseDTO result =
+                adminUserServiceImpl.updateUser(userId, dto);
+
+        assertNotNull(result);
+        assertEquals("updated@gmail.com", result.email());
+
+        verify(userRepository).findById(userId);
+        verify(userValidator).validateEmailUpdate(user, dto.email());
+        verify(userRepository).flush();
+        verify(userMapper).toDTO(user);
+    }
+
+    @Test
+    void updateUser_shouldThrowResourceNotFoundException_whenUserDoesNotExist() {
+
+        Long userId = 99L;
+
+        UserUpdateRequestDTO dto =
+                new UserUpdateRequestDTO(
+                        "Admin Updated",
+                        EMAIL,
+                        PASSWORD
+                );
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.empty());
+
+        assertThrows(
+                ResourceNotFoundException.class,
+                () -> adminUserServiceImpl.updateUser(userId, dto));
+
+        verify(userRepository).findById(userId);
+        verifyNoInteractions(userMapper);
+        verifyNoInteractions(userValidator);
+    }
+
+    @Test
+    void updateUser_shouldThrowConflictException_whenEmailAlreadyExists() {
+
+        Long userId = 1L;
+
+        UserUpdateRequestDTO dto =
+                new UserUpdateRequestDTO(
+                        "Admin Updated",
+                        "existing@gmail.com",
+                        PASSWORD
+                );
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+
+        doThrow(new ConflictException(
+                "Email already exists"))
+                .when(userValidator)
+                .validateEmailUpdate(user, dto.email());
+
+        assertThrows(
+                ConflictException.class,
+                () -> adminUserServiceImpl.updateUser(userId, dto));
+
+        verify(userRepository).findById(userId);
+        verify(userValidator).validateEmailUpdate(user, dto.email());
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void updateUser_shouldEncodePassword_whenPasswordIsProvided() {
+
+        Long userId = 1L;
+
+        UserUpdateRequestDTO dto =
+                new UserUpdateRequestDTO(
+                        "Updated User",
+                        "updated@gmail.com",
+                        "123456"
+                );
+
+        UserResponseDTO response =
+                new UserResponseDTO(
+                        userId,
+                        "Updated User",
+                        "updated@gmail.com",
+                        UserStatus.ACTIVE,
+                        Set.of(),
+                        List.of(),
+                        List.of(),
+                        Instant.now(),
+                        Instant.now()
+                );
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        doNothing().when(userValidator).validateEmailUpdate(user, dto.email());
+
+        when(passwordEncoder.encode("123456"))
+                .thenReturn("encoded-password");
+
+        when(userMapper.toDTO(user)).thenReturn(response);
+
+        var result =
+                adminUserServiceImpl.updateUser(userId, dto);
+
+        assertNotNull(result);
+
+        verify(userRepository).findById(userId);
+        verify(userValidator).validateEmailUpdate(user, dto.email());
+        verify(passwordEncoder).encode("123456");
+        verify(userRepository).flush();
+        verify(userMapper).toDTO(user);
+
+        assertEquals("encoded-password", user.getPassword());
+    }
+
+    @Test
+    void updateUser_shouldNotEncodePassword_whenPasswordIsNull() {
+
+        Long userId = 1L;
+
+        UserUpdateRequestDTO dto =
+                new UserUpdateRequestDTO(
+                        "Updated User",
+                        "updated@gmail.com",
+                        null
+                );
+
+        UserResponseDTO response =
+                new UserResponseDTO(
+                        userId,
+                        "Updated User",
+                        "updated@gmail.com",
+                        UserStatus.ACTIVE,
+                        Set.of(),
+                        List.of(),
+                        List.of(),
+                        Instant.now(),
+                        Instant.now()
+                );
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        doNothing().when(userValidator).validateEmailUpdate(user, dto.email());
+
+        when(userMapper.toDTO(user)).thenReturn(response);
+
+        var result =
+                adminUserServiceImpl.updateUser(userId, dto);
+
+        assertNotNull(result);
+
+        verify(passwordEncoder, never()).encode(anyString());
+        verify(userRepository).flush();
+        verify(userMapper).toDTO(user);
+    }
+
+    @Test
+    void updateUser_shouldNotEncodePassword_whenPasswordIsBlank() {
+
+        Long userId = 1L;
+
+        UserUpdateRequestDTO dto =
+                new UserUpdateRequestDTO(
+                        "Updated User",
+                        "updated@gmail.com",
+                        ""
+                );
+
+        UserResponseDTO response =
+                new UserResponseDTO(
+                        userId,
+                        "Updated User",
+                        "updated@gmail.com",
+                        UserStatus.ACTIVE,
+                        Set.of(),
+                        List.of(),
+                        List.of(),
+                        Instant.now(),
+                        Instant.now()
+                );
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        doNothing().when(userValidator).validateEmailUpdate(user, dto.email());
+
+        when(userMapper.toDTO(user)).thenReturn(response);
+
+        var result =
+                adminUserServiceImpl.updateUser(userId, dto);
+
+        assertNotNull(result);
+
+        verify(passwordEncoder, never()).encode(anyString());
+        verify(userRepository).flush();
+        verify(userMapper).toDTO(user);
+    }
+
+    @Test
+    void updateUserStatus_shouldUpdateStatus_whenStatusIsValid() {
+
+        Long userId = 1L;
+
+        UserStatusUpdateRequestDTO dto =
+                new UserStatusUpdateRequestDTO(
+                        UserStatus.PENDING
+                );
+
+        UserResponseDTO response =
+                new UserResponseDTO(
+                        userId,
+                        "Admin Test",
+                        EMAIL,
+                        UserStatus.PENDING,
+                        Set.of(),
+                        List.of(),
+                        List.of(),
+                        Instant.now(),
+                        Instant.now()
+                );
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        when(userMapper.toDTO(user)).thenReturn(response);
+
+        UserResponseDTO result =
+                adminUserServiceImpl.updateUserStatus(userId, dto);
+
+        assertNotNull(result);
+        assertEquals(UserStatus.PENDING, result.status());
+        assertEquals(UserStatus.PENDING, user.getStatus());
+
+        verify(userRepository).findById(userId);
+        verify(userMapper).toDTO(user);
+    }
+
+    @Test
+    void updateUserStatus_shouldThrowResourceNotFoundException_whenUserDoesNotExist() {
+
+        Long userId = 99L;
+
+        UserStatusUpdateRequestDTO dto = new UserStatusUpdateRequestDTO(
+                UserStatus.BLOCKED);
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> adminUserServiceImpl.updateUserStatus(
+                        userId, dto));
+
+        verify(userRepository).findById(userId);
+        verifyNoInteractions(userMapper);
+    }
+
+    @Test
+    void updateUserStatus_shouldBlockUser_whenStatusIsBlocked() {
+
+        Long userId = 1L;
+
+        UserStatusUpdateRequestDTO dto =
+                new UserStatusUpdateRequestDTO(
+                        UserStatus.BLOCKED
+                );
+
+        UserResponseDTO response =
+                new UserResponseDTO(
+                        userId,
+                        "Admin Test",
+                        EMAIL,
+                        UserStatus.BLOCKED,
+                        Set.of(),
+                        List.of(),
+                        List.of(),
+                        Instant.now(),
+                        Instant.now()
+                );
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        when(userMapper.toDTO(user)).thenReturn(response);
+
+        UserResponseDTO result = adminUserServiceImpl.updateUserStatus(
+                userId, dto);
+
+        assertEquals(UserStatus.BLOCKED, result.status());
+        assertEquals(UserStatus.BLOCKED, user.getStatus());
+
+        verify(userRepository).findById(userId);
+        verify(userMapper).toDTO(user);
+    }
+
+    @Test
+    void updateUserRole_shouldUpdateRoles_whenRequestIsValid() {
+
+        Long userId = 1L;
+
+        UserRoleUpdateRequestDTO dto =
+                new UserRoleUpdateRequestDTO(
+                        Set.of(RoleName.ROLE_ADMIN)
+                );
+
+        user.setRoles(Set.of());
+
+        UserResponseDTO response =
+                new UserResponseDTO(
+                        userId,
+                        "Admin Test",
+                        EMAIL,
+                        UserStatus.ACTIVE,
+                        Set.of(),
+                        List.of(),
+                        List.of(),
+                        Instant.now(),
+                        Instant.now()
+                );
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        when(roleRepository.findByName(RoleName.ROLE_ADMIN))
+                .thenReturn(Optional.of(role));
+
+        when(userMapper.toDTO(user))
+                .thenReturn(response);
+
+        UserResponseDTO result =
+                adminUserServiceImpl.updateUserRole(userId, dto);
+
+        assertNotNull(result);
+        assertEquals(response, result);
+        assertTrue(user.getRoles().contains(role));
+
+        verify(userRepository).findById(userId);
+        verify(roleRepository).findByName(RoleName.ROLE_ADMIN);
+        verify(userMapper).toDTO(user);
+    }
+
+    @Test
+    void updateUserRole_shouldThrowException_whenUserNotFound() {
+
+        Long userId = 99L;
+
+        UserRoleUpdateRequestDTO dto =
+                new UserRoleUpdateRequestDTO(Set.of(RoleName.ROLE_ADMIN));
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> adminUserServiceImpl.updateUserRole(userId, dto));
+
+        verify(userRepository).findById(userId);
+        verifyNoInteractions(roleRepository);
+        verifyNoInteractions(userMapper);
+    }
+
+    @Test
+    void updateUserRole_shouldThrowException_whenRoleNotFound() {
+
+        Long userId = 1L;
+
+        UserRoleUpdateRequestDTO dto =
+                new UserRoleUpdateRequestDTO(Set.of(RoleName.ROLE_ADMIN));
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        when(roleRepository.findByName(RoleName.ROLE_ADMIN))
+                .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> adminUserServiceImpl.updateUserRole(userId, dto)
+        );
+
+        verify(userRepository).findById(userId);
+        verify(roleRepository).findByName(RoleName.ROLE_ADMIN);
+        verifyNoInteractions(userMapper);
+    }
+
+    @Test
+    void deleteUser_shouldDeleteUser_whenUserExists() {
+
+        Long userId = 1L;
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        doNothing().when(userRepository)
+                .delete(user);
+
+        adminUserServiceImpl.deleteUser(userId);
+
+        verify(userRepository).findById(userId);
+        verify(userRepository).delete(user);
+    }
+
+    @Test
+    void deleteUser_shouldThrowResourceNotFoundException_whenUserDoesNotExist() {
+
+        Long userId = 99L;
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> adminUserServiceImpl.deleteUser(userId));
+
+        verify(userRepository).findById(userId);
+        verify(userRepository, never()).delete(any());
+    }
+}
