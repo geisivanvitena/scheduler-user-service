@@ -5,6 +5,7 @@ import com.geisivan.userservice.application.dto.request.UserUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.response.PageResponseDTO;
 import com.geisivan.userservice.application.dto.response.UserResponseDTO;
 import com.geisivan.userservice.application.service.AdminUserService;
+import com.geisivan.userservice.controller.controller.AdminUserController;
 import com.geisivan.userservice.domain.enums.UserStatus;
 import com.geisivan.userservice.infrastructure.exception.custom.ConflictException;
 import com.geisivan.userservice.infrastructure.exception.custom.ResourceNotFoundException;

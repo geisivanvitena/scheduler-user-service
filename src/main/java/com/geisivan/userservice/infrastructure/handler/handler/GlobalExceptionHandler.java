@@ -1,4 +1,4 @@
-package com.geisivan.userservice.infrastructure.exception.handler;
+package com.geisivan.userservice.infrastructure.handler.handler;
 
 import com.geisivan.userservice.infrastructure.exception.code.ErrorCode;
 import com.geisivan.userservice.infrastructure.exception.custom.ApiException;
