@@ -1,4 +1,4 @@
-package com.geisivan.userservice.application.controller;
+package com.geisivan.userservice.controller.controller;
 
 import com.geisivan.userservice.application.dto.request.PhoneRequestDTO;
 import com.geisivan.userservice.application.dto.request.PhoneUpdateRequestDTO;

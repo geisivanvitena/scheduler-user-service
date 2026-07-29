@@ -5,6 +5,7 @@ import com.geisivan.userservice.application.dto.request.UserRequestDTO;
 import com.geisivan.userservice.application.dto.response.LoginResponseDTO;
 import com.geisivan.userservice.application.dto.response.UserResponseDTO;
 import com.geisivan.userservice.application.service.AuthService;
+import com.geisivan.userservice.controller.controller.AuthController;
 import com.geisivan.userservice.domain.enums.UserStatus;
 import com.geisivan.userservice.infrastructure.exception.custom.ConflictException;
 import com.geisivan.userservice.infrastructure.exception.custom.UserUnauthorizedException;
