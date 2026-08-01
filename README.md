@@ -4,6 +4,24 @@
 
 The User Service provides a secure and scalable authentication and authorization layer for the Scheduler System platform, implementing Role-Based Access Control (RBAC) with Spring Security and JWT Authentication.
 
+<div align="center">
+
+[![GitHub Actions](https://github.com/geisivanvitena/scheduler-user-service/actions/workflows/gradle.yml/badge.svg)](https://github.com/geisivanvitena/scheduler-user-service/actions/workflows/gradle.yml)
+[![Quality gate status](https://sonarcloud.io/api/project_badges/measure?project=geisivanvitena_scheduler-user-service&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=geisivanvitena_scheduler-user-service)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=geisivanvitena_scheduler-user-service&metric=coverage)](https://sonarcloud.io/summary/new_code?id=geisivanvitena_scheduler-user-service)
+[![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://github.com/geisivanvitena/scheduler-user-service/blob/main/LICENSE)
+
+</div>
+
+<div align="center">
+
+[![Java](https://img.shields.io/badge/Java-17-ED8B00?logo=openjdk&logoColor=white)](https://www.oracle.com/java/)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5.16-6DB33F?logo=spring&logoColor=white)](https://spring.io/projects/spring-boot)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Gradle](https://img.shields.io/badge/Gradle-Build_Tool-02303A?logo=gradle&logoColor=white)](https://gradle.org/)
+
+</div>
+
 ---
 
 ## Summary
@@ -20,6 +38,7 @@ The User Service provides a secure and scalable authentication and authorization
 - [How to Run the Project](#how-to-run-the-project)
 - [API Documentation](#api-documentation)
 - [Tests and Coverage](#tests-and-coverage)
+- [Code Quality Analysis](#code-quality-analysis)
 - [CI/CD Pipeline](#cicd-pipeline)
 - [Roadmap](#roadmap)
 - [License](#license)
@@ -31,14 +50,11 @@ The User Service provides a secure and scalable authentication and authorization
 
 The **User Service** is the **Identity and Access Management (IAM)** component of the **Scheduler System platform.**
 
-It is responsible for:
+Responsibilities:
 
 - User registration
-- Authentication
-- Authorization
+- Authentication and authorization
 - User profile management
-- Role assignment
-- User status control
 - Address management
 - Phone management
 - Administrative user operations
@@ -47,7 +63,7 @@ Authentication and authorization are implemented using **Spring Security** and *
 
 The service was designed following **RESTful API principles** and is part of a microservices architecture where each service owns a specific business domain.
 
-The application follows a layered architecture inspired by **Clean Architecture principles**, separating responsibilities between controllers, application services, domain entities, repositories, and infrastructure components.
+The application follows a layered architecture inspired by Clean Architecture concepts, promoting separation of responsibilities between controllers, application services, domain entities, repositories, and infrastructure components.
 
 ---
 
@@ -88,98 +104,15 @@ Services can be developed, deployed, scaled, and maintained independently, impro
 
 ## Features
 
-### Authentication
-
-- User registration
-- User authentication
-
----
-
-### User Management
-
-Authenticated users can:
-
-- Retrieve their own profile
-- Update their own profile
-- Delete their own account
-
----
-
-### Address Management
-
-Users can manage their own addresses:
-
-- Create address
-- List addresses
-- Update address
-- Delete address
-
----
-
-### Phone Management
-
-Users can manage their own phone numbers:
-
-- Create phone number
-- List phone numbers
-- Update phone number
-- Delete phone number
-
----
-
-### Administration
-
-Administrators can:
-
-- Create users
-- Find users by ID
-- Find users by email
-- Search users with filters
-- Update user information
-- Update user status
-- Update user roles
-- Delete users
-
----
-
-### Authorization
-
-The system implements **Role-Based Access Control (RBAC)** with the following roles:
-
-**ROLE_USER**
-
-Permissions:
-
-- View own profile
-- Update own profile
-- Delete own profile
-- Manage own addresses
-- Manage own phone numbers
-
----
-
-**ROLE_ADMIN**
-
-Permissions:
-
-- Full user management
-- User status management
-- User role management
-- User search and filtering
-- Administrative operations
-
----
-
-### User Status
-
-Users can have the following states:
-
-| Status   | Description                      |
-|----------|----------------------------------|
-| ACTIVE   | User can access the system       |
-| INACTIVE | User account is inactive         |
-| BLOCKED  | User access is blocked           |
-| PENDING  | User account awaiting activation |
+- JWT Authentication
+- Role-Based Access Control (RBAC)
+- User Profile Management
+- Address Management
+- Phone Management
+- Administrative User Management
+- Pagination and filtering for administrative users
+- API documentation with Swagger/OpenAPI
+- Continuous code quality analysis with SonarQube
 
 ---
 
@@ -230,28 +163,9 @@ The security layer is composed of the following components:
 
 ---
 
-### Authentication and Authorization Flow
-
-The authentication process works as follows:
-
-1. User sends login credentials through the authentication endpoint.
-2. Application validates credentials against stored user data.
-3. Password validation is performed securely using BCrypt.
-4. A JWT token is generated after successful authentication.
-5. Client stores the JWT token.
-6. Client sends the token in subsequent API requests.
-
-Example:
-
-```http
-Authorization: Bearer <JWT_TOKEN>
-```
-
----
-
 ## Package Structure
 
-The User Service follows a layered architecture inspired by **Clean Architecture principles**, separating responsibilities between API interfaces, application logic, domain models, and infrastructure components.
+The User Service follows a layered architecture inspired by **Clean Architecture concepts**, separating responsibilities between API interfaces, application logic, domain models, and infrastructure components.
 
 ```text
 com.geisivan.userservice/
@@ -290,14 +204,6 @@ com.geisivan.userservice/
 
 ## Endpoints
 
-The User Service exposes RESTful API endpoints for:
-
-- Authentication
-- User profile management
-- Address management
-- Phone management
-- Administrative user operations
-
 Protected endpoints require a valid JWT token using the Bearer authentication scheme.
 
 Example:
@@ -310,22 +216,18 @@ Authorization: Bearer <JWT_TOKEN>
 
 ### Public Endpoints 🔓
 
-These endpoints do not require authentication.
-
-#### Authentication 
+No authentication required.
 
 | Method | Endpoint                | Authentication | Description                              |
 |--------|-------------------------|----------------|------------------------------------------|
-| POST   | `/api/v1/auth/register` | ❌ public      | Register a new user                      |
-| POST   | `/api/v1/auth/login`    | ❌ public      | Authenticate user and generate JWT token |
+| POST   | `/api/v1/auth/register` | public         | Register a new user                      |
+| POST   | `/api/v1/auth/login`    | public         | Authenticate user and generate JWT token |
 
 ---
 
-### Protected Endpoints 🔒
+### User Profile Endpoints 🔒
 
-These endpoints require a valid JWT token.
-
-#### Authenticated User Endpoints
+Manage the authenticated user's profile.
 
 **Required Role:** `ROLE_USER`
 
@@ -337,9 +239,9 @@ These endpoints require a valid JWT token.
 
 ---
 
-#### Address Management 
+### Address Endpoints 🔒
 
-These endpoints allow authenticated users to manage their own addresses.
+Manage the authenticated user's addresses.
 
 **Required Role:** `ROLE_USER`
 
@@ -352,9 +254,9 @@ These endpoints allow authenticated users to manage their own addresses.
 
 ---
 
-#### Phone Management
+### Phone Endpoints 🔒
 
-These endpoints allow authenticated users to manage their own phone numbers.
+Manage the authenticated user's phone numbers.
 
 **Required Role:** `ROLE_USER`
 
@@ -367,9 +269,9 @@ These endpoints allow authenticated users to manage their own phone numbers.
 
 ---
 
-#### Administrative Endpoints
+### Administrative Endpoints 🔒
 
-These endpoints are restricted to administrators.
+Administrative operations for user management.
 
 **Required Role:** `ROLE_ADMIN`
 
@@ -386,24 +288,9 @@ These endpoints are restricted to administrators.
 
 ---
 
-### Authorization Rules
-
-| Resource                | Required Role  | Description                              |
-|-------------------------|----------------|------------------------------------------|
-| User profile management | `ROLE_USER`    | Users can manage their own profile       |
-| Address management      | `ROLE_USER`    | Users can manage their own addresses     |
-| Phone management        | `ROLE_USER`    | Users can manage their own phone numbers |
-| User administration     | `ROLE_ADMIN`   | Administrators can manage platform users |
-
-All authorization rules are enforced by Spring Security through JWT Authentication and Role-Based Access Control (RBAC).
-
----
-
 ## API Request Examples
 
 ### User Registration
-
-Creates a new user account.
 
 **Endpoint:**
 
@@ -411,7 +298,7 @@ Creates a new user account.
 POST /api/v1/auth/register
 ```
 
-Request:
+**Request:**
 
 ```json
 {
@@ -421,7 +308,7 @@ Request:
 }
 ```
 
-Response:
+**Response:**
 
 ```json
 {
@@ -443,15 +330,13 @@ Response:
 
 ### User Authentication
 
-Authenticates a user and generates a JWT token.
-
-**Endpoint**
+**Endpoint:**
 
 ```http
 POST /api/v1/auth/login
 ```
 
-**Request**
+**Request:**
 
 ```json
 {
@@ -460,7 +345,7 @@ POST /api/v1/auth/login
 }
 ```
 
-**Response**
+**Response:**
 
 ```json
 { 
@@ -473,39 +358,32 @@ POST /api/v1/auth/login
 
 ## Technologies Used
 
-### Backend
+### Backend stack
 
-[![Java](https://img.shields.io/badge/Java-17-ED8B00?logo=openjdk&logoColor=white)](https://www.oracle.com/java/)
+| Technology         | Purpose                          |
+|--------------------|----------------------------------|
+| Java 17            | Main programming language        |
+| Spring Boot 3.5.16 | Application framework            |
+| Spring Security    | Authentication and authorization |
+| JWT                | Stateless authentication         |
+| Spring Data JPA    | Database persistence             |
+| PostgreSQL         | Relational database              |
+| Gradle             | Build automation                 |
 
-[![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5.16-6DB33F?logo=spring&logoColor=white)](https://spring.io/projects/spring-boot)
+### Testing & Quality
 
-[![Spring Security](https://img.shields.io/badge/Spring_Security-Authentication-6DB33F?logo=spring&logoColor=white)](https://spring.io/projects/spring-security)
+| Technology | Purpose              |
+|------------|----------------------|
+| JUnit 5    | Unit testing         |
+| Mockito    | Mocking dependencies |
+| JaCoCo     | Code coverage        |
+| SonarQube  | Static code analysis |
 
-[![Spring Data JPA](https://img.shields.io/badge/Spring_Data_JPA-Persistence-6DB33F?logo=spring&logoColor=white)](https://spring.io/projects/spring-data-jpa)
+### Documentation
 
-[![JWT](https://img.shields.io/badge/JJWT-0.13.0-000000?logo=jsonwebtokens&logoColor=white)](https://github.com/jwtk/jjwt)
-
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-
-[![Gradle](https://img.shields.io/badge/Gradle-Build_Tool-02303A?logo=gradle&logoColor=white)](https://gradle.org/)
-
----
-
-### API Documentation
-
-[![Swagger](https://img.shields.io/badge/Swagger-OpenAPI-85EA2D?logo=swagger&logoColor=white)](https://swagger.io/)
-
----
-
-### Testing and Code Quality
-
-[![JUnit 5](https://img.shields.io/badge/JUnit_5-Testing-25A162?logo=junit5&logoColor=white)](https://junit.org/junit5/)
-
-[![Mockito](https://img.shields.io/badge/Mockito-Mocking-78A641?logoColor=white)](https://site.mockito.org/)
-
-[![JaCoCo](https://img.shields.io/badge/JaCoCo-Coverage-orange)](https://www.jacoco.org/jacoco/)
-
-[![SonarQube](https://img.shields.io/badge/SonarQube-Code_Quality-4E9BCD?logo=sonarqube&logoColor=white)](https://www.sonarsource.com/)
+| Technology        | Purpose                        |
+|-------------------|--------------------------------|
+| Swagger / OpenAPI | Interactive API documentation  |
 
 ---
 
@@ -515,13 +393,8 @@ POST /api/v1/auth/login
 
 ⚠️ **Important**: Before running the application, ensure that the following software is installed on your machine:
 
-[![Java](https://img.shields.io/badge/Java-17-ED8B00?logo=openjdk&logoColor=white)](https://www.oracle.com/java/)
-
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-
-💡 _Recommended tool for API testing:_
-
-[![Postman](https://img.shields.io/badge/Postman-API%20Collection-FF6C37?logo=postman&logoColor=white)](https://www.postman.com/)
+- Java 17
+- PostgreSQL
 
 ---
 
@@ -537,19 +410,19 @@ cd scheduler-user-service
 
 ---
 
-### Environments
+### Configure Environment Variables
 
-```bash
+```env
 # JWT Configuration
-JWT_SECRET=secret-key
+JWT_SECRET=your-secret-key
 JWT_EXPIRATION_MS=3600000
 
 # PostgreSQL Configuration
 DB_HOST=host
 DB_PORT=port
-POSTGRES_DB=db
-POSTGRES_USER=user
-POSTGRES_PASSWORD=password
+POSTGRES_DB=your-db
+POSTGRES_USER=your-user
+POSTGRES_PASSWORD=your-database-password
 ```
 
 ⚠️ **Important**: Never commit .env files containing sensitive information.
@@ -560,19 +433,19 @@ POSTGRES_PASSWORD=password
 
 ⚠️ **Important**: Make sure PostgreSQL is running and accessible on the local host.
 
-#### Build the project
+**Build the project**
 
 ```bash
 ./gradlew clean build
 ```
 
-#### Start the application
+**Start the application**
 
 ```bash
 ./gradlew bootRun
 ```
 
-#### The application will be available at:
+**The application will be available at:**
 
 ```text
 http://localhost:8080
@@ -582,28 +455,24 @@ http://localhost:8080
 
 ## API Documentation
 
-The project provides interactive API documentation through Swagger UI.
-
-[![Swagger](https://img.shields.io/badge/Swagger-API_Docs-85EA2D?logo=swagger&logoColor=white)](http://localhost:8080/swagger-ui/index.html)
-
-#### Swagger UI is available at:
+### Swagger UI is available at:
 
 ```text
 http://localhost:8080/swagger-ui/index.html
 ```
 
-You can use Swagger UI to:
+Features:
 
-- Explore available endpoints
-- Execute requests directly from the browser
-- Inspect request and response models
-- Test JWT-protected endpoints
+- Interactive API exploration
+- Request execution directly from the browser
+- Request and response schemas
+- JWT authentication support
 
 ---
 
 ## Tests and Coverage
 
-The project includes **comprehensive automated tests** covering:
+The project includes automated tests covering:
 
 - Controllers
 - Services
@@ -611,7 +480,7 @@ The project includes **comprehensive automated tests** covering:
 - Security components
 - Business rules
 
-### Testing Stack:
+Testing Stack:
 
 - JUnit 5
 - Mockito
@@ -636,9 +505,9 @@ The project includes **comprehensive automated tests** covering:
 
 ---
 
-### Running the Tests
+### Run Tests
 
-**Execute all automated tests:**
+**Execute tests:**
 
 ```bash
 ./gradlew test
@@ -658,26 +527,26 @@ build/reports/jacoco/test/html/index.html
 
 ---
 
-### SonarQube Analysis
+## Code Quality Analysis
 
-The project uses SonarQube for continuous code quality analysis.
+The project uses SonarQube for continuous code quality inspection.
 
-Run SonarQube analysis:
+### Quality Overview
 
-```bash
-./gradlew sonar
-```
+[![Quality gate status](https://sonarcloud.io/api/project_badges/measure?project=geisivanvitena_scheduler-user-service&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=geisivanvitena_scheduler-user-service)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=geisivanvitena_scheduler-user-service&metric=coverage)](https://sonarcloud.io/summary/new_code?id=geisivanvitena_scheduler-user-service)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=geisivanvitena_scheduler-user-service&metric=bugs)](https://sonarcloud.io/summary/new_code?id=geisivanvitena_scheduler-user-service)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=geisivanvitena_scheduler-user-service&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=geisivanvitena_scheduler-user-service)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=geisivanvitena_scheduler-user-service&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=geisivanvitena_scheduler-user-service)
 
-**SonarQube validates:**
+### Code Quality Metrics
 
-- Test coverage
-- Code reliability
-- Code maintainability
-- Code duplication
-- Security vulnerabilities
-- Code smells
-
-The project must pass the SonarQube Quality Gate to ensure code quality before integration.
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=geisivanvitena_scheduler-user-service&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=geisivanvitena_scheduler-user-service)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=geisivanvitena_scheduler-user-service&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=geisivanvitena_scheduler-user-service)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=geisivanvitena_scheduler-user-service&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=geisivanvitena_scheduler-user-service)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=geisivanvitena_scheduler-user-service&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=geisivanvitena_scheduler-user-service)
+[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=geisivanvitena_scheduler-user-service&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=geisivanvitena_scheduler-user-service)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=geisivanvitena_scheduler-user-service&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=geisivanvitena_scheduler-user-service)
 
 ---
 
@@ -702,7 +571,7 @@ The pipeline ensures:
 - Continuous quality monitoring
 - Safer integration of new features
 
-CI environment uses JDK 21, while the application runtime uses Java 17.
+The CI environment uses JDK 21, while the application runtime targets Java 17.
 
 ---
 
@@ -746,14 +615,12 @@ See the LICENSE file for more details.
 
 ### Geisivan Vitena
 
-Full Stack Java Developer
+Full Stack Java Developer | Spring Boot | Angular | REST APIs | CI/CD
 
-### Contact
+Contact
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Geisivan%20Vitena-0A66C2?logo=linkedin&logoColor=white)](https://www.linkedin.com/in/geisivan-vitena-a46168246/)
 
 [![GitHub](https://img.shields.io/badge/GitHub-Perfil-181717?logo=github&logoColor=white)](https://github.com/geisivanvitena/)
 
 [![Email](https://img.shields.io/badge/Email-gsv1205%40yahoo.com-D14836?logo=yahoo&logoColor=white)](mailto:gsv1205@yahoo.com)
-
----
