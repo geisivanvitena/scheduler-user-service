@@ -302,7 +302,7 @@ POST /api/v1/auth/register
 
 ```json
 {
-    "name": "User",
+    "name": "user test",
     "email": "user@example.com",
     "password": "123456"
 }
@@ -312,20 +312,23 @@ POST /api/v1/auth/register
 
 ```json
 {
-    "id": 1,
-    "name": "User",
+    "id": 7,
+    "name": "user test",
     "email": "user@example.com",
     "status": "ACTIVE",
     "roles": [
-      "ROLE_USER"
+      {
+        "id": 2,
+        "name": "ROLE_USER",
+        "description": "Standard user role with limited access"
+      }
     ],
-    "createdAt": "2026-07-26T18:30:15Z",
-    "updatedAt": "2026-07-26T18:30:15Z",
     "addresses": [],
-    "phones": []
+    "phones": [],
+    "createdAt": "2026-08-02T21:58:54.508014Z",
+    "updatedAt": "2026-08-02T21:58:54.508014Z"
 }
 ```
-
 ---
 
 ### User Authentication
@@ -350,7 +353,45 @@ POST /api/v1/auth/login
 ```json
 { 
    "token": "jwt-token", 
-   "type": "Bearer"
+   "type": "Bearer",
+   "userId": 7,
+   "email": "user@example.com"
+}
+```
+
+---
+
+### Get Authenticated User
+
+**Endpoint:**
+
+```http
+GET /api/v1/users/me
+```
+
+**Headers:**
+
+Authorization: Bearer <jwt-token>
+
+**Response:**
+
+```json
+{
+    "id": 7,
+    "name": "user test",
+    "email": "user@example.com",
+    "status": "ACTIVE",
+    "roles": [
+     {
+        "id": 2,
+        "name": "ROLE_USER",
+        "description": "Standard user role with limited access"
+     }
+    ],
+    "addresses": [],
+    "phones": [],
+    "createdAt": "2026-08-02T21:58:54.508014Z",
+    "updatedAt": "2026-08-02T21:58:54.508014Z"
 }
 ```
 
