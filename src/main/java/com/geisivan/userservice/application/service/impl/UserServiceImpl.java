@@ -7,6 +7,7 @@ import com.geisivan.userservice.application.service.CurrentUserService;
 import com.geisivan.userservice.application.service.UserService;
 import com.geisivan.userservice.application.validator.UserValidator;
 import com.geisivan.userservice.domain.entity.User;
+import com.geisivan.userservice.infrastructure.exception.custom.ResourceNotFoundException;
 import com.geisivan.userservice.infrastructure.repository.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,17 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    @Transactional(readOnly = true)
+    @Override
+    public UserResponseDTO findUserById(Long id) {
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User not found"));
+
+        return userMapper.toDTO(user);
+    }
 
     @Transactional(readOnly = true)
     @Override
