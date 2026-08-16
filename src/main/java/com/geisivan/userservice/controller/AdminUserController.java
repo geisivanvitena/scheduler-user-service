@@ -1,4 +1,4 @@
-package com.geisivan.userservice.controller.controller;
+package com.geisivan.userservice.controller;
 
 import com.geisivan.userservice.application.dto.request.AdminUserRequestDTO;
 import com.geisivan.userservice.application.dto.request.UserRoleUpdateRequestDTO;

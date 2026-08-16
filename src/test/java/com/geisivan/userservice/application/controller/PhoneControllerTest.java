@@ -4,7 +4,7 @@ import com.geisivan.userservice.application.dto.request.PhoneRequestDTO;
 import com.geisivan.userservice.application.dto.request.PhoneUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.response.PhoneResponseDTO;
 import com.geisivan.userservice.application.service.PhoneService;
-import com.geisivan.userservice.controller.controller.PhoneController;
+import com.geisivan.userservice.controller.PhoneController;
 import com.geisivan.userservice.domain.enums.PhoneType;
 import com.geisivan.userservice.infrastructure.exception.custom.ResourceNotFoundException;
 import com.geisivan.userservice.infrastructure.security.jwt.JwtUtil;
