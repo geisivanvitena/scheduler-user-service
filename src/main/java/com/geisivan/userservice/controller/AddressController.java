@@ -1,4 +1,4 @@
-package com.geisivan.userservice.controller.controller;
+package com.geisivan.userservice.controller;
 
 import com.geisivan.userservice.application.dto.request.AddressRequestDTO;
 import com.geisivan.userservice.application.dto.request.AddressUpdateRequestDTO;

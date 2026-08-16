@@ -4,7 +4,7 @@ import com.geisivan.userservice.application.dto.request.AddressRequestDTO;
 import com.geisivan.userservice.application.dto.request.AddressUpdateRequestDTO;
 import com.geisivan.userservice.application.dto.response.AddressResponseDTO;
 import com.geisivan.userservice.application.service.AddressService;
-import com.geisivan.userservice.controller.controller.AddressController;
+import com.geisivan.userservice.controller.AddressController;
 import com.geisivan.userservice.infrastructure.exception.custom.ResourceNotFoundException;
 import com.geisivan.userservice.infrastructure.security.jwt.JwtUtil;
 import com.geisivan.userservice.infrastructure.security.service.UserDetailsServiceImpl;
