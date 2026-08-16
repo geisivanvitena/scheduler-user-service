@@ -7,6 +7,7 @@ import com.geisivan.userservice.application.service.impl.UserServiceImpl;
 import com.geisivan.userservice.application.validator.UserValidator;
 import com.geisivan.userservice.domain.entity.User;
 import com.geisivan.userservice.domain.enums.UserStatus;
+import com.geisivan.userservice.infrastructure.exception.custom.ResourceNotFoundException;
 import com.geisivan.userservice.infrastructure.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -60,6 +62,55 @@ class UserServiceTest {
         user.setRoles(Set.of());
         user.setAddresses(new ArrayList<>());
         user.setPhones(new ArrayList<>());
+    }
+
+    @Test
+    void findUserById_shouldReturnUser_whenUserExists() {
+
+        Long userId = 1L;
+
+        UserResponseDTO response =
+                new UserResponseDTO(
+                        1L,
+                        "User test",
+                        EMAIL,
+                        UserStatus.ACTIVE,
+                        Set.of(),
+                        List.of(),
+                        List.of(),
+                        Instant.now(),
+                        null
+                );
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        when(userMapper.toDTO(user))
+                .thenReturn(response);
+
+        var result = userServiceImpl.findUserById(userId);
+
+        assertNotNull(result);
+        assertEquals(userId, result.id());
+        assertEquals(EMAIL, result.email());
+
+        verify(userRepository).findById(userId);
+        verify(userMapper).toDTO(user);
+    }
+
+    @Test
+    void findUserById_shouldThrowException_whenUserDoesNotExist() {
+
+        Long userId = 999L;
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> userServiceImpl.findUserById(userId));
+
+        verify(userRepository).findById(userId);
+        verifyNoInteractions(userMapper);
     }
 
     @Test
