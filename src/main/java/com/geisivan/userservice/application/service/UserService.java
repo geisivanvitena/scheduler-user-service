@@ -5,6 +5,8 @@ import com.geisivan.userservice.application.dto.response.UserResponseDTO;
 
 public interface UserService {
 
+    UserResponseDTO findUserById(Long id);
+
     UserResponseDTO findAuthenticatedUser();
 
     UserResponseDTO updateAuthenticatedUser(UserUpdateRequestDTO dto);
