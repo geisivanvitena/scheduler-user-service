@@ -210,13 +210,13 @@ Authorization: Bearer <JWT_TOKEN>
 
 ### User Registration
 
-**Endpoint:**
+**Endpoint**
 
 ```http
 POST /api/v1/auth/register
 ```
 
-**Request:**
+**Request Example**
 
 ```json
 {
@@ -226,7 +226,7 @@ POST /api/v1/auth/register
 }
 ```
 
-**Response:**
+**Response Example**
 
 ```json
 {
@@ -251,13 +251,13 @@ POST /api/v1/auth/register
 
 ### User Authentication
 
-**Endpoint:**
+**Endpoint**
 
 ```http
 POST /api/v1/auth/login
 ```
 
-**Request:**
+**Request Example**
 
 ```json
 {
@@ -266,7 +266,7 @@ POST /api/v1/auth/login
 }
 ```
 
-**Response:**
+**Response Example**
 
 ```json
 { 
@@ -281,17 +281,19 @@ POST /api/v1/auth/login
 
 ### Get Authenticated User
 
-**Endpoint:**
+**Endpoint**
 
 ```http
 GET /api/v1/users/me
 ```
 
-**Headers:**
+**Required Header**
 
-Authorization: Bearer <jwt-token>
+```http
+Authorization: Bearer <JWT_TOKEN>
+```
 
-**Response:**
+**Response Example**
 
 ```json
 {
@@ -369,7 +371,7 @@ POSTGRES_USER=your-user
 POSTGRES_PASSWORD=your-database-password
 ```
 
-⚠️ **Important**: Never commit .env files containing sensitive information.
+⚠️ **Important:** Never commit .env files containing sensitive information.
 
 ---
 
@@ -385,7 +387,7 @@ POSTGRES_PASSWORD=your-database-password
 ./gradlew bootRun
 ```
 
-**The application will be available at:** `http://localhost:8080`
+The application will be available at: `http://localhost:8080`
 
 ---
 
@@ -447,7 +449,7 @@ http://localhost:8080/swagger-ui/index.html
 ./gradlew jacocoTestReport
 ```
 
-💡 _Detailed information about test execution and **coverage reports** can be found at:_
+💡 _Detailed information about test execution and coverage reports can be found at:_
 
 ```text
 build/reports/jacoco/test/html/index.html
@@ -524,7 +526,7 @@ The project uses GitHub Actions to automate build, testing, code coverage analys
 
 This project is licensed under the MIT License.
 
-**See the LICENSE file for more details.**
+See the LICENSE file for more details.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://github.com/geisivanvitena/scheduler-user-service/blob/main/LICENSE)
 
