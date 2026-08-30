@@ -36,10 +36,12 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build, Test, Coverage and SonarCloud
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           ./gradlew clean build jacocoTestReport sonar \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.organization=geisivanvitena \
             -Dsonar.projectKey=geisivanvitena_scheduler-user-service \
-            -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.token=$SONAR_TOKEN \
             -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml
