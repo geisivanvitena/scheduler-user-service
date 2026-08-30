@@ -22,28 +22,22 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '21'
-
-      - name: Cache Gradle packages
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+          cache: gradle
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
       - name: Build, Test, Coverage and SonarCloud
         run: |
-          ./gradlew clean test jacocoTestReport sonar \
+          ./gradlew clean build jacocoTestReport sonar \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.organization=geisivanvitena \
             -Dsonar.projectKey=geisivanvitena_scheduler-user-service \

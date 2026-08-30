@@ -2,14 +2,13 @@ package com.geisivan.userservice.infrastructure.security.service;
 
 import com.geisivan.userservice.domain.entity.Role;
 import com.geisivan.userservice.domain.entity.User;
-import com.geisivan.userservice.domain.enums.RoleName;
 import com.geisivan.userservice.infrastructure.repository.UserRepository;
 import com.geisivan.userservice.infrastructure.security.auth.MainUser;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import java.util.HashSet;
 import java.util.stream.Collectors;
+import org.jspecify.annotations.NonNull;
 
 @Service
 public class UserDetailsServiceImpl  implements UserDetailsService {
@@ -22,7 +21,8 @@ public class UserDetailsServiceImpl  implements UserDetailsService {
     }
 
     @Override
-    public MainUser loadUserByUsername(String email) {
+    @NonNull
+    public MainUser loadUserByUsername(@NonNull String email) {
         User user = userRepository.findByEmailWithRoles(email)
                 .orElseThrow(() ->
                         new UsernameNotFoundException(

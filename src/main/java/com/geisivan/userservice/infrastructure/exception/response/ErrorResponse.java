@@ -4,7 +4,7 @@ import com.geisivan.userservice.infrastructure.exception.code.ErrorCode;
 import java.time.Instant;
 import java.util.List;
 
-public record ErrorResponseDTO(
+public record ErrorResponse(
         Instant timestamp,
         int status,
         String error,

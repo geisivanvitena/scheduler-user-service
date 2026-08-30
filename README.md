@@ -1,8 +1,8 @@
-# Scheduler System - User Service
+# User Service
 
 **Identity and Access Management (IAM) microservice for the Scheduler System platform.**
 
-The User Service provides a secure and scalable authentication and authorization layer for the Scheduler System platform, implementing Role-Based Access Control (RBAC) with Spring Security and JWT Authentication.
+The User Service centralizes user management, authentication, and authorization across the Scheduler System ecosystem.
 
 <div align="center">
 
@@ -15,8 +15,8 @@ The User Service provides a secure and scalable authentication and authorization
 
 <div align="center">
 
-[![Java](https://img.shields.io/badge/Java-17-ED8B00?logo=openjdk&logoColor=white)](https://www.oracle.com/java/)
-[![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5.16-6DB33F?logo=spring&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)](https://www.oracle.com/java/)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot-4.x-6DB33F?logo=spring&logoColor=white)](https://spring.io/projects/spring-boot)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Gradle](https://img.shields.io/badge/Gradle-Build_Tool-02303A?logo=gradle&logoColor=white)](https://gradle.org/)
 
@@ -30,7 +30,6 @@ The User Service provides a secure and scalable authentication and authorization
 - [Platform Architecture](#platform-architecture)
 - [User Service Architecture](#user-service-architecture)
 - [Features](#features)
-- [Security Architecture](#security-architecture)
 - [Package Structure](#package-structure)
 - [Endpoints](#endpoints)
 - [API Request Examples](#api-request-examples)
@@ -48,7 +47,7 @@ The User Service provides a secure and scalable authentication and authorization
 
 ## About the Project
 
-The **User Service** is the **Identity and Access Management (IAM)** component of the **Scheduler System platform.**
+The User Service is the Identity and Access Management (IAM) component of the Scheduler System platform.
 
 Responsibilities:
 
@@ -59,25 +58,19 @@ Responsibilities:
 - Phone management
 - Administrative user operations
 
-Authentication and authorization are implemented using **Spring Security** and **JWT Authentication**, ensuring secure access to protected resources through **Role-Based Access Control (RBAC)**.
-
-The service was designed following **RESTful API principles** and is part of a microservices architecture where each service owns a specific business domain.
-
-The application follows a layered architecture inspired by Clean Architecture concepts, promoting separation of responsibilities between controllers, application services, domain entities, repositories, and infrastructure components.
+Authentication and authorization are implemented using Spring Security and JWT Authentication, ensuring secure access to protected resources through Role-Based Access Control (RBAC).
 
 ---
 
 ## Platform Architecture
 
-The Scheduler System follows a **microservices architecture** where each service is responsible for a specific business domain.
-
-Services can be developed, deployed, scaled, and maintained independently, improving flexibility, scalability, and system reliability.
+The Scheduler System follows a microservices architecture where each service is responsible for a specific business domain.
 
 ### Services
 
 - **BFF (Backend for Frontend)** – Centralizes requests and orchestrates communication between clients and microservices
-- **User Service** – Identity and Access Management (IAM)
-- **Task Service** – Task management and scheduling
+- **User Service** – Identity and Access Management
+- **Task Service** – Task management
 - **Notification Service** – Email notification delivery
 
 ---
@@ -86,86 +79,38 @@ Services can be developed, deployed, scaled, and maintained independently, impro
 
 <div align="center">
 
-<img src="img/architecture.png" alt="User Service Architecture" style="width: 900px; height: auto;" />
+<img src="img/diagram.png" alt="User Service Architecture" style="width: 900px; height: auto;" />
 
 </div>
 
-### Request Flow:
+### Flow:
 
-1. Client sends a request
-2. BFF forwards the request to the User Service
-3. Spring Security validates authentication and authorization
-4. Business rules are executed
-5. Data is persisted in PostgreSQL
-6. Response is returned to the BFF
-7. BFF returns the response to the client
+1. Client sends a request to the User Service
+2. Spring Security validates the JWT token and user permissions
+3. The User Service processes the business rules
+4. Data is persisted or retrieved from PostgreSQL
+5. The User Service returns the response to the client
 
 ---
 
 ## Features
 
-- JWT Authentication
+- User registration
+- User authentication
+- JWT-based authorization
 - Role-Based Access Control (RBAC)
-- User Profile Management
-- Address Management
-- Phone Management
-- Administrative User Management
-- Pagination and filtering for administrative users
-- API documentation with Swagger/OpenAPI
-- Continuous code quality analysis with SonarQube
-
----
-
-## Security Architecture
-
-The User Service uses **Spring Security** with **JWT Authentication** to protect API resources and enforce authorization rules.
-
-The security implementation follows a **stateless authentication architecture**, meaning the server does not maintain user sessions.
-
-Every protected request must contain a valid JWT token using the Bearer authentication scheme.
-
-Example:
-
-```http
-Authorization: Bearer <JWT_TOKEN>
-```
-
----
-
-### Security Features
-
-The security layer provides:
-
-- JWT-based authentication
-- Role-Based Access Control (RBAC)
-- Stateless session management
-- BCrypt password hashing
-- Protected API endpoints
-- Custom authentication handling
-- Custom authorization handling
-
-CSRF protection is disabled because the application follows a stateless REST API architecture using JWT authentication.
-
----
-
-### Security Components
-
-The security layer is composed of the following components:
-
-| Component                      | Responsibility                                                                    |
-|--------------------------------|-----------------------------------------------------------------------------------|
-| Spring Security                | Provides authentication and authorization mechanisms for protecting API endpoints |
-| JWT Authentication             | Enables stateless authentication using JSON Web Tokens (JWT)                      |
-| JwtRequestFilter               | Intercepts incoming requests and validates JWT tokens before granting access      |
-| UserDetailsServiceImpl         | Loads user information and assigned roles during authentication                   |
-| CustomAuthenticationEntryPoint | Handles unauthenticated requests and returns HTTP 401 Unauthorized                |
-| CustomAccessDeniedHandler      | Handles authorization failures and returns HTTP 403 Forbidden                     |
+- User profile management
+- Address management
+- Phone management
+- Password encryption using BCrypt
+- Swagger/OpenAPI documentation
+- Automated testing
+- CI/CD integration
+- Code quality analysis with SonarQube and SonarCloud
 
 ---
 
 ## Package Structure
-
-The User Service follows a layered architecture inspired by **Clean Architecture concepts**, separating responsibilities between API interfaces, application logic, domain models, and infrastructure components.
 
 ```text
 com.geisivan.userservice/
@@ -186,23 +131,24 @@ com.geisivan.userservice/
     │ 
     ├── config/
     ├── exception/
-    ├── handler/
     ├── repository/
     └── security/
 ```
 
-### Layer Responsibilities
-
-| Layer          | Responsibility                                                                          |
-|----------------|-----------------------------------------------------------------------------------------|
-| Controller     | Exposes REST API endpoints and handles HTTP requests                                    |
-| Application    | Contains business use cases, DTOs, validators, and service logic                        |
-| Domain         | Contains business entities, enums, and core domain rules                                |
-| Infrastructure | Contains database access, security configuration, exceptions, and external integrations |
-
 ---
 
 ## Endpoints
+
+### Public Endpoints 🔓
+
+| Method | Endpoint                | Authentication | Description                              |
+|--------|-------------------------|----------------|------------------------------------------|
+| POST   | `/api/v1/auth/register` | public         | Register a new user                      |
+| POST   | `/api/v1/auth/login`    | public         | Authenticate user and generate JWT token |
+
+---
+
+### Protected Endpoints 🔒
 
 Protected endpoints require a valid JWT token using the Bearer authentication scheme.
 
@@ -212,24 +158,7 @@ Example:
 Authorization: Bearer <JWT_TOKEN>
 ```
 
----
-
-### Public Endpoints 🔓
-
-No authentication required.
-
-| Method | Endpoint                | Authentication | Description                              |
-|--------|-------------------------|----------------|------------------------------------------|
-| POST   | `/api/v1/auth/register` | public         | Register a new user                      |
-| POST   | `/api/v1/auth/login`    | public         | Authenticate user and generate JWT token |
-
----
-
-### User Profile Endpoints 🔒
-
-Manage the authenticated user's profile.
-
-**Required Role:** `ROLE_USER`
+**User Endpoints** 🔒
 
 | Method | Endpoint           | Authentication | Description                           |
 |--------|--------------------|----------------|---------------------------------------|
@@ -239,11 +168,7 @@ Manage the authenticated user's profile.
 
 ---
 
-### Address Endpoints 🔒
-
-Manage the authenticated user's addresses.
-
-**Required Role:** `ROLE_USER`
+**Address Endpoints** 🔒
 
 | Method | Endpoint                          | Authentication | Description                             |
 |--------|-----------------------------------|----------------|-----------------------------------------|
@@ -254,11 +179,7 @@ Manage the authenticated user's addresses.
 
 ---
 
-### Phone Endpoints 🔒
-
-Manage the authenticated user's phone numbers.
-
-**Required Role:** `ROLE_USER`
+**Phone Endpoints** 🔒
 
 | Method | Endpoint                       | Authentication | Description                                   |
 |--------|--------------------------------|----------------|-----------------------------------------------|
@@ -269,9 +190,7 @@ Manage the authenticated user's phone numbers.
 
 ---
 
-### Administrative Endpoints 🔒
-
-Administrative operations for user management.
+**Administrative Endpoints** 🔒
 
 **Required Role:** `ROLE_ADMIN`
 
@@ -399,32 +318,15 @@ Authorization: Bearer <jwt-token>
 
 ## Technologies Used
 
-### Backend stack
-
-| Technology         | Purpose                          |
-|--------------------|----------------------------------|
-| Java 17            | Main programming language        |
-| Spring Boot 3.5.16 | Application framework            |
-| Spring Security    | Authentication and authorization |
-| JWT                | Stateless authentication         |
-| Spring Data JPA    | Database persistence             |
-| PostgreSQL         | Relational database              |
-| Gradle             | Build automation                 |
-
-### Testing & Quality
-
-| Technology | Purpose              |
-|------------|----------------------|
-| JUnit 5    | Unit testing         |
-| Mockito    | Mocking dependencies |
-| JaCoCo     | Code coverage        |
-| SonarQube  | Static code analysis |
-
-### Documentation
-
-| Technology        | Purpose                        |
-|-------------------|--------------------------------|
-| Swagger / OpenAPI | Interactive API documentation  |
+| Technology      | Purpose                          |
+|-----------------|----------------------------------|
+| Java 21 LTS     | Main programming language        |
+| Spring Boot 4.x | Application framework            |
+| Spring Security | Authentication and authorization |
+| JWT             | Stateless authentication         |
+| Spring Data JPA | Database persistence             |
+| PostgreSQL      | Relational database              |
+| Gradle          | Build automation                 |
 
 ---
 
@@ -432,9 +334,7 @@ Authorization: Bearer <jwt-token>
 
 ### Prerequisites
 
-⚠️ **Important**: Before running the application, ensure that the following software is installed on your machine:
-
-- Java 17
+- Java 21
 - PostgreSQL
 
 ---
@@ -442,10 +342,12 @@ Authorization: Bearer <jwt-token>
 ### Clone the Repository
 
 ```bash
-# Clone the repository
+# Clone the project
+
 git clone https://github.com/geisivanvitena/scheduler-user-service.git
 
-# Navigate to the project directory
+# Enter the project folder
+
 cd scheduler-user-service
 ```
 
@@ -454,11 +356,13 @@ cd scheduler-user-service
 ### Configure Environment Variables
 
 ```env
-# JWT Configuration
+# JWT
+
 JWT_SECRET=your-secret-key
 JWT_EXPIRATION_MS=3600000
 
-# PostgreSQL Configuration
+# PostgreSQL
+
 DB_HOST=host
 DB_PORT=port
 POSTGRES_DB=your-db
@@ -470,63 +374,49 @@ POSTGRES_PASSWORD=your-database-password
 
 ---
 
-### Run the Application
-
-⚠️ **Important**: Make sure PostgreSQL is running and accessible on the local host.
-
-**Build the project**
+### Build
 
 ```bash
 ./gradlew clean build
 ```
 
-**Start the application**
+### Run
 
 ```bash
 ./gradlew bootRun
 ```
 
-**The application will be available at:**
-
-```text
-http://localhost:8080
-```
+**The application will be available at:** `http://localhost:8080`
 
 ---
 
 ## API Documentation
 
-### Swagger UI is available at:
+### Swagger UI:
 
 ```text
 http://localhost:8080/swagger-ui/index.html
 ```
 
-Features:
+**The documentation provides:**
 
-- Interactive API exploration
-- Request execution directly from the browser
-- Request and response schemas
-- JWT authentication support
+- Endpoint details
+- Request schemas
+- Response schemas
+- Authentication requirements
+- Interactive API execution
 
 ---
 
 ## Tests and Coverage
 
-The project includes automated tests covering:
-
-- Controllers
-- Services
-- Validators
-- Security components
-- Business rules
-
-Testing Stack:
+**Testing Stack:**
 
 - JUnit 5
 - Mockito
 - JaCoCo
 - SonarQube
+- SonarCloud
 
 | Application Class      | What is Tested                        | Test Class                |
 |------------------------|---------------------------------------|---------------------------|
@@ -548,19 +438,17 @@ Testing Stack:
 
 ### Run Tests
 
-**Execute tests:**
-
 ```bash
 ./gradlew test
 ```
 
-**Generate JaCoCo coverage report:**
+### Generate Coverage Report
 
 ```bash
 ./gradlew jacocoTestReport
 ```
 
-**Coverage report:**
+💡 _Detailed information about test execution and **coverage reports** can be found at:_
 
 ```text
 build/reports/jacoco/test/html/index.html
@@ -570,9 +458,7 @@ build/reports/jacoco/test/html/index.html
 
 ## Code Quality Analysis
 
-The project uses SonarQube for continuous code quality inspection.
-
-### Quality Overview
+**Quality Overview**
 
 [![Quality gate status](https://sonarcloud.io/api/project_badges/measure?project=geisivanvitena_scheduler-user-service&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=geisivanvitena_scheduler-user-service)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=geisivanvitena_scheduler-user-service&metric=coverage)](https://sonarcloud.io/summary/new_code?id=geisivanvitena_scheduler-user-service)
@@ -580,7 +466,7 @@ The project uses SonarQube for continuous code quality inspection.
 [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=geisivanvitena_scheduler-user-service&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=geisivanvitena_scheduler-user-service)
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=geisivanvitena_scheduler-user-service&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=geisivanvitena_scheduler-user-service)
 
-### Code Quality Metrics
+**Code Quality Metrics**
 
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=geisivanvitena_scheduler-user-service&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=geisivanvitena_scheduler-user-service)
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=geisivanvitena_scheduler-user-service&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=geisivanvitena_scheduler-user-service)
@@ -595,50 +481,43 @@ The project uses SonarQube for continuous code quality inspection.
 
 The project uses GitHub Actions to automate build, testing, code coverage analysis, and code quality verification.
 
-The pipeline executes the following steps:
+**Pipeline Steps:**
 
 1. Checkout source code
-2. Configure JDK environment
+2. Configure JDK 21 environment
 3. Build the application
 4. Execute automated tests
 5. Generate JaCoCo coverage reports
-6. Analyze code quality with SonarQube
-7. Validate SonarQube Quality Gate
+6. Analyze code quality with SonarCloud
+7. Validate SonarCloud Quality Gate
 
-The pipeline ensures:
+**The pipeline ensures:**
 
 - Code reliability
 - Automated validation
 - Continuous quality monitoring
 - Safer integration of new features
 
-The CI environment uses JDK 21, while the application runtime targets Java 17.
-
 ---
 
 ## Roadmap
 
-Future improvements planned for the User Service:
-
-### Security
-
-- [ ] Refresh Token implementation
-- [ ] Email verification workflow
-- [ ] Password recovery workflow
-
-### DevOps
-
-- [ ] Docker containerization
-- [ ] Docker Compose
-- [ ] Kubernetes deployment
-- [ ] AWS deployment
-
-### Platform Evolution
-
-- [ ] Frontend integration
-- [ ] Application monitoring
-- [ ] Centralized logging
-- [ ] Distributed tracing
+- [x] User Registration
+- [x] JWT Authentication & Authorization
+- [x] Role-Based Access Control (RBAC)
+- [x] User Management
+- [x] Swagger Documentation
+- [x] Unit Tests
+- [x] JaCoCo Integration
+- [x] SonarCloud Integration
+- [x] CI/CD Pipeline
+- [ ] Refresh Token Implementation
+- [ ] Email Verification Workflow
+- [ ] Password Recovery Workflow
+- [ ] Docker Support
+- [ ] Kubernetes Deployment
+- [ ] AWS Deployment
+- [ ] Frontend Application Integration
 
 ---
 
@@ -646,7 +525,7 @@ Future improvements planned for the User Service:
 
 This project is licensed under the MIT License.
 
-See the LICENSE file for more details.
+**See the LICENSE file for more details.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://github.com/geisivanvitena/scheduler-user-service/blob/main/LICENSE)
 
@@ -656,12 +535,5 @@ See the LICENSE file for more details.
 
 ### Geisivan Vitena
 
-Full Stack Java Developer | Spring Boot | Angular | REST APIs | CI/CD
-
-Contact
-
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Geisivan%20Vitena-0A66C2?logo=linkedin&logoColor=white)](https://www.linkedin.com/in/geisivan-vitena-a46168246/)
-
-[![GitHub](https://img.shields.io/badge/GitHub-Perfil-181717?logo=github&logoColor=white)](https://github.com/geisivanvitena/)
-
 [![Email](https://img.shields.io/badge/Email-gsv1205%40yahoo.com-D14836?logo=yahoo&logoColor=white)](mailto:gsv1205@yahoo.com)
