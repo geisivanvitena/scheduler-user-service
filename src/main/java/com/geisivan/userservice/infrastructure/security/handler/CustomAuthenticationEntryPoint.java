@@ -3,9 +3,10 @@ package com.geisivan.userservice.infrastructure.security.handler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.geisivan.userservice.infrastructure.exception.code.ErrorCode;
 import com.geisivan.userservice.infrastructure.exception.custom.UserInactiveException;
-import com.geisivan.userservice.infrastructure.exception.response.ErrorResponseDTO;
+import com.geisivan.userservice.infrastructure.exception.response.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -30,9 +31,10 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
     }
 
     @Override
-    public void commence(HttpServletRequest request,
-                         HttpServletResponse response,
-                         AuthenticationException authException
+    public void commence(
+            HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull AuthenticationException authException
 
     ) throws IOException {
 
@@ -62,7 +64,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
             errorCode = ErrorCode.UNAUTHORIZED;
         }
 
-        ErrorResponseDTO errorResponse = new ErrorResponseDTO(
+        ErrorResponse errorResponse = new ErrorResponse(
                 Instant.now(),
                 status,
                 error,

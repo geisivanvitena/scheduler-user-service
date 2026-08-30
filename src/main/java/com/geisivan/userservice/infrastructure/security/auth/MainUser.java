@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.jspecify.annotations.NonNull;
 
 public record MainUser(
         Long id,
@@ -19,6 +20,7 @@ public record MainUser(
 ) implements UserDetails {
 
     @Override
+    @NonNull
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles.stream()
                 .map(role -> new SimpleGrantedAuthority(role.name()))
@@ -26,11 +28,13 @@ public record MainUser(
     }
 
     @Override
+    @NonNull
     public String getUsername() {
         return email;
     }
 
     @Override
+    @NonNull
     public String getPassword() {
         return password;
     }

@@ -40,15 +40,10 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(
-            HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
 
         http
-                /*
-                 * CSRF protection is disabled because this application is a stateless REST API
-                 * authenticated with JWT tokens sent in the Authorization header.
-                 * No HTTP session or cookie-based authentication is used.
-                 */
+                // CSRF disabled because the API is stateless and uses JWT authentication
                 .csrf(csrf -> csrf.disable())
 
                 .sessionManagement(session ->
@@ -85,7 +80,8 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration authenticationConfiguration) throws Exception {
+            AuthenticationConfiguration authenticationConfiguration) {
+
         return authenticationConfiguration.getAuthenticationManager();
     }
 }
