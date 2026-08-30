@@ -79,7 +79,7 @@ The Scheduler System follows a microservices architecture where each service is 
 
 <div align="center">
 
-<img src="img/diagram.png" alt="User Service Architecture" style="width: 900px; height: auto;" />
+<img src="img/diagram.png" alt="User Service Architecture" style="width: 300px; height: auto;" />
 
 </div>
 
@@ -92,7 +92,6 @@ The Scheduler System follows a microservices architecture where each service is 
 5. The User Service returns the response to the client
 
 ---
-
 ## Features
 
 - User registration
