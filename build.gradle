@@ -1,8 +1,8 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.5.16'
+	id 'org.springframework.boot' version '4.1.1'
 	id 'io.spring.dependency-management' version '1.1.7'
-	id "org.sonarqube" version "4.4.1.3373"
+	id "org.sonarqube" version "7.4.0.8496"
 	id 'jacoco'
 }
 
@@ -11,7 +11,7 @@ version = '0.0.1-SNAPSHOT'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
+		languageVersion = JavaLanguageVersion.of(21)
 	}
 }
 
@@ -20,30 +20,41 @@ repositories {
 }
 
 dependencies {
+
+	// Spring Boot
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-	implementation 'io.github.cdimascio:java-dotenv:5.2.2'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
+
+	//Dotenv
+	implementation 'io.github.cdimascio:java-dotenv:5.2.2'
+
+	// JWT
 	implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
-
-	// Fix CVE-2025-48924 vulnerability (SpringDoc transitive dependency)
-	implementation 'org.apache.commons:commons-lang3:3.18.0'
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.17'
-
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.13.0'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.13.0'
+
+	// PostgreSQL
 	runtimeOnly 'org.postgresql:postgresql'
 
-	annotationProcessor 'org.projectlombok:lombok'
-	compileOnly 'org.projectlombok:lombok'
+	// OpenAPI / Swagger
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.0'
 
+	// Lombok
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	// Tests
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.boot:spring-boot-webmvc-test'
 	testImplementation 'org.springframework.security:spring-security-test'
+
 	testCompileOnly 'org.projectlombok:lombok'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testAnnotationProcessor 'org.projectlombok:lombok'
+
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 test {
@@ -53,13 +64,14 @@ test {
 
 jacocoTestReport {
 	dependsOn test
+
 	reports {
 		xml.required = true
 		html.required = true
 	}
 }
 
-jacocoTestCoverageVerification{
+jacocoTestCoverageVerification {
 	violationRules {
 		rule {
 			limit {
@@ -78,7 +90,7 @@ def excludedSonar = [
 		"src/test/java/com/geisivan/userservice/**"
 ]
 
-sonarqube {
+sonar {
 	properties {
 		property "sonar.projectKey", "user-service"
 		property "sonar.host.url", "http://localhost:9000"
@@ -89,6 +101,6 @@ sonarqube {
 	}
 }
 
-tasks.named("sonarqube") {
+tasks.named("sonar") {
 	dependsOn tasks.jacocoTestReport
 }

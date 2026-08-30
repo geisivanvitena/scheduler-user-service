@@ -1,4 +1,4 @@
-package com.geisivan.userservice.infrastructure.config.init;
+package com.geisivan.userservice.infrastructure.config.bootstrap;
 
 import com.geisivan.userservice.domain.entity.Role;
 import com.geisivan.userservice.domain.entity.User;

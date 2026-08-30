@@ -1,4 +1,4 @@
-package com.geisivan.userservice.domain.entity;
+package com.geisivan.userservice.domain.auditing;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;

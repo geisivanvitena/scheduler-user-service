@@ -1,5 +1,6 @@
 package com.geisivan.userservice.domain.entity;
 
+import com.geisivan.userservice.domain.auditing.Auditable;
 import com.geisivan.userservice.domain.enums.UserStatus;
 import jakarta.persistence.*;
 import lombok.*;

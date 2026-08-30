@@ -4,7 +4,6 @@ import com.geisivan.userservice.domain.entity.User;
 import com.geisivan.userservice.infrastructure.exception.custom.ConflictException;
 import com.geisivan.userservice.infrastructure.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -12,7 +11,6 @@ import org.springframework.stereotype.Component;
 public class UserValidator {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
 
     public void validateEmailUpdate(User user, String email) {
 

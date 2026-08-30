@@ -1,8 +1,8 @@
-package com.geisivan.userservice.infrastructure.handler.handler;
+package com.geisivan.userservice.infrastructure.exception.handler;
 
 import com.geisivan.userservice.infrastructure.exception.code.ErrorCode;
 import com.geisivan.userservice.infrastructure.exception.custom.ApiException;
-import com.geisivan.userservice.infrastructure.exception.response.ErrorResponseDTO;
+import com.geisivan.userservice.infrastructure.exception.response.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
 
     // Handler business exceptions
     @ExceptionHandler(ApiException.class)
-    public ResponseEntity<ErrorResponseDTO> handleApiException(
+    public ResponseEntity<ErrorResponse> handleApiException(
             ApiException exception,
             HttpServletRequest request) {
 
@@ -34,7 +34,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(exception.getHttpStatus())
-                .body(new ErrorResponseDTO(
+                .body(new ErrorResponse(
                         Instant.now(),
                         exception.getHttpStatus().value(),
                         exception.getHttpStatus().getReasonPhrase(),
@@ -46,7 +46,7 @@ public class GlobalExceptionHandler {
 
     // Handler authentication exception
     @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ErrorResponseDTO> handleAuthenticationException(
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(
             AuthenticationException exception,
             HttpServletRequest request){
 
@@ -57,7 +57,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
-                .body(new ErrorResponseDTO(
+                .body(new ErrorResponse(
                         Instant.now(),
                         HttpStatus.UNAUTHORIZED.value(),
                         HttpStatus.UNAUTHORIZED.getReasonPhrase(),
@@ -69,7 +69,7 @@ public class GlobalExceptionHandler {
 
     // Handles validation exceptions
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponseDTO> handleValidationException(
+    public ResponseEntity<ErrorResponse> handleValidationException(
             MethodArgumentNotValidException exception,
             HttpServletRequest request) {
 
@@ -81,7 +81,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponseDTO(
+                .body(new ErrorResponse(
                         Instant.now(),
                         HttpStatus.BAD_REQUEST.value(),
                         HttpStatus.BAD_REQUEST.getReasonPhrase(),
@@ -93,7 +93,7 @@ public class GlobalExceptionHandler {
 
     // Handles unexpected exceptions.
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponseDTO> handleGenericException(
+    public ResponseEntity<ErrorResponse> handleGenericException(
             Exception exception,
             HttpServletRequest request) {
 
@@ -105,7 +105,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponseDTO(
+                .body(new ErrorResponse(
                         Instant.now(),
                         HttpStatus.INTERNAL_SERVER_ERROR.value(),
                         HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
