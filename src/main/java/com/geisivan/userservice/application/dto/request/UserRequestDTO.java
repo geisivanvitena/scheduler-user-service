@@ -28,9 +28,7 @@ public record UserRequestDTO(
                 message = "Password must be between 6 and 255 characters")
         String password,
 
-        @Valid
-        List<AddressRequestDTO> addresses,
+        List<@Valid AddressRequestDTO> addresses,
 
-        @Valid
-        List<PhoneRequestDTO> phones
+        List<@Valid PhoneRequestDTO> phones
 ) {}
