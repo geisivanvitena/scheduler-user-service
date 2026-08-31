@@ -39,9 +39,7 @@ public record AdminUserRequestDTO(
         @NotNull(message = "Status is required")
         UserStatus status,
 
-        @Valid
-        List<AddressRequestDTO> addresses,
+        List<@Valid AddressRequestDTO> addresses,
 
-        @Valid
-        List<PhoneRequestDTO> phones
+        List<@Valid PhoneRequestDTO> phones
 ) {}
